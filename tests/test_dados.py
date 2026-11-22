@@ -41,6 +41,12 @@ class DadosTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             validar(exemplo().drop(columns="dur"))
 
+    def test_rejeita_bytes_fracionarios(self):
+        dados = exemplo().astype({"sbytes": float})
+        dados.loc[0, "sbytes"] = 1.5
+        with self.assertRaises(ValueError):
+            validar(dados)
+
 
 if __name__ == "__main__":
     unittest.main()

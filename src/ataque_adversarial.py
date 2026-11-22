@@ -1,164 +1,71 @@
-import json
-from pathlib import Path
+"""Etapa 3: referência de ruído e evasão direcionada sob restrições."""
 
+import argparse
 import joblib
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
 
-# Caminhos
-BASE_DIR = Path(__file__).resolve().parent.parent
-DATA_DIR = BASE_DIR / "data"
-RESULTADOS_DIR = BASE_DIR / "resultados"
+from avaliacao import medir_evasao, resumir_repeticoes
+from dados import RESULTADOS_DIR, carregar_dados, proveniencia, salvar_json, separar, sha256
+from perturbacoes import AMOSTRAS, INTENSIDADES, SEMENTES, TENTATIVAS, busca_evasao, calcular_escalas, ruido_iqr, ruido_restrito
 
-RESULTADOS_DIR.mkdir(exist_ok=True)
 
-# Configurações do experimento
-SEMENTE = 42
-AMOSTRAS = 2000
-INTENSIDADES = [0.05, 0.10, 0.20, 0.30]
-
-# Características numéricas que serão manipuladas
-CARACTERISTICAS = ["dur", "sbytes", "dbytes", "rate", "sload", "dload"]
-
-print("=== ATAQUE ADVERSARIAL ===")
-
-# 1. Carregar modelo treinado
-modelo = joblib.load(RESULTADOS_DIR / "modelo_random_forest.pkl")
-
-# 2. Carregar dados
-treino = pd.read_csv(DATA_DIR / "UNSW_NB15_training-set.csv")
-
-teste = pd.read_csv(DATA_DIR / "UNSW_NB15_testing-set.csv")
-
-colunas_remover = ["id", "attack_cat", "label"]
-
-# Selecionar somente registros de ataques reais
-ataques = teste[teste["label"] == 1].copy()
-
-# Amostragem reproduzível
-ataques = ataques.sample(n=min(AMOSTRAS, len(ataques)), random_state=SEMENTE)
-
-X_original = ataques.drop(columns=colunas_remover)
-
-# 3. Previsões originais
-previsoes_originais = modelo.predict(X_original)
-
-detectados = previsoes_originais == 1
-
-print(f"Registros maliciosos: {len(X_original)}")
-print(f"Detectados inicialmente: {detectados.sum()}")
-
-# Taxa de detecção antes do ataque
-recall_original = np.mean(previsoes_originais == 1)
-
-# 4. Calcular limites a partir do treinamento
-# Não utilizamos o conjunto de teste para definir
-# os intervalos de manipulação.
-limites = {}
-
-for coluna in CARACTERISTICAS:
-    valores = treino[coluna]
-
-    limites[coluna] = {
-        "min": float(valores.quantile(0.01)),
-        "max": float(valores.quantile(0.99)),
-        "escala": float(valores.quantile(0.75) - valores.quantile(0.25)),
+def executar(amostras=AMOSTRAS, tentativas=TENTATIVAS, sementes=SEMENTES):
+    treino, teste = carregar_dados()
+    caminho = RESULTADOS_DIR / 'modelo_random_forest.pkl'
+    modelo = joblib.load(caminho)
+    ataques = teste.loc[teste.label == 1].sample(n=min(amostras, int(teste.label.sum())), random_state=42)
+    X, _ = separar(ataques)
+    pred_limpo = modelo.predict(X)
+    escalas = calcular_escalas(treino)
+    experimentos = []
+    for semente in sementes:
+        rng = np.random.default_rng(semente)
+        for intensidade in INTENSIDADES:
+            ruido = ruido_iqr(X, intensidade, rng, escalas)
+            met_ruido = medir_evasao(pred_limpo, modelo.predict(ruido))
+            referencia = ruido_restrito(X, intensidade, np.random.default_rng(semente))
+            met_restrito = medir_evasao(pred_limpo, modelo.predict(referencia))
+            adversarial, consultas = busca_evasao(modelo, X, intensidade, semente, tentativas)
+            met_busca = medir_evasao(pred_limpo, modelo.predict(adversarial))
+            experimentos.append({'semente': semente, 'intensidade': intensidade, 'ruido_iqr': met_ruido, 'aleatorio_restrito': met_restrito, 'busca_restrita': met_busca, 'consultas': consultas})
+            print(f'Semente {semente}, intensidade {intensidade:.0%}: recall {met_busca["recall"]:.4f}, evasao {met_busca["taxa_evasao"]:.4%}', flush=True)
+    resumos = {}
+    for metodo in ['ruido_iqr', 'aleatorio_restrito', 'busca_restrita']:
+        resumos[metodo] = resumir_repeticoes([dict(intensidade=e['intensidade'], **e[metodo]) for e in experimentos], ['recall', 'taxa_evasao', 'queda_recall_pp'])
+    saida = {
+        'versao_protocolo': 2, 'proveniencia': proveniencia(), 'modelo_sha256': sha256(caminho),
+        'configuracao': {'amostras': len(X), 'semente_amostra': 42, 'sementes_busca': list(sementes), 'tentativas': tentativas, 'intensidades': INTENSIDADES, 'ids_amostra': ataques.id.tolist(),
+            'orcamento_busca': 'fracao do valor original: atraso e padding; inclui atualizacao de atributos derivados',
+            'orcamento_ruido': 'fracao do IQR do treino em seis atributos independentes; referencia historica, nao equivalente ao orcamento da busca'},
+        'recall_original': float((pred_limpo == 1).mean()), 'experimentos': experimentos, 'resumos': resumos,
+        'limitacoes': ['Espaco de caracteristicas; sem demonstracao de preservacao do ataque em pacotes reais.', 'Ruido IQR e busca usam orcamentos diferentes; referencia restrita e busca compartilham operacoes e limites, com 1 e N candidatos, respectivamente.', 'Desvio padrao descreve sementes da busca na mesma amostra e no mesmo modelo, nao variabilidade de treinamento.'],
     }
+    salvar_json(RESULTADOS_DIR / 'resultados_ataque.json', saida)
+    fig, eixos = plt.subplots(1, 2, figsize=(11, 4.5))
+    for eixo, metrica, titulo in [(eixos[0], 'recall', 'Recall (%)'), (eixos[1], 'taxa_evasao', 'Taxa de evasao (%)')]:
+        for metodo, rotulo in [('ruido_iqr', 'Ruido IQR (historico)'), ('aleatorio_restrito', 'Aleatorio restrito (1 candidato)'), ('busca_restrita', f'Busca restrita ({tentativas} candidatos)')]:
+            pontos = resumos[metodo]
+            eixo.errorbar([p['intensidade'] * 100 for p in pontos], [p[metrica]['media'] * 100 for p in pontos], yerr=[p[metrica]['desvio_padrao'] * 100 for p in pontos], marker='o', capsize=3, label=rotulo)
+        if metrica == 'recall':
+            eixo.axhline(saida['recall_original'] * 100, color='gray', linestyle='--', label='Amostra limpa')
+        eixo.set(xlabel='Orcamento (%) — ver definicao de cada metodo', ylabel=titulo)
+        eixo.grid(alpha=.3)
+        eixo.legend(fontsize=8)
+    fig.suptitle('Ruido de referencia e busca de evasao: media e desvio entre sementes')
+    fig.tight_layout()
+    fig.savefig(RESULTADOS_DIR / 'grafico_ataque.png', dpi=180)
+    plt.close(fig)
+    return saida
 
 
-# 5. Função de manipulação adversarial
-def modificar_registros(dados, intensidade, rng):
-    modificados = dados.copy()
-
-    for coluna in CARACTERISTICAS:
-        info = limites[coluna]
-
-        # Perturbação proporcional ao intervalo
-        # interquartil da característica
-        escala = info["escala"]
-
-        if escala == 0:
-            continue
-
-        ruido = rng.uniform(-intensidade, intensidade, size=len(modificados)) * escala
-
-        valores = modificados[coluna].to_numpy(dtype=float)
-
-        novos_valores = valores + ruido
-
-        # Restringir a valores não negativos
-        novos_valores = np.maximum(novos_valores, 0)
-
-        # Limitar a alteração por amostra
-        # e não o valor original absoluto
-        novos_valores = np.clip(
-            novos_valores,
-            valores - intensidade * escala,
-            valores + intensidade * escala,
-        )
-
-        modificados[coluna] = novos_valores
-
-    return modificados
-
-
-# 6. Executar experimentos
-resultados = []
-rng = np.random.default_rng(SEMENTE)
-
-for intensidade in INTENSIDADES:
-    print(f"\nTestando intensidade: {intensidade:.0%}")
-
-    X_modificado = modificar_registros(X_original, intensidade, rng)
-
-    previsoes = modelo.predict(X_modificado)
-
-    # Recall entre todos os registros maliciosos
-    recall = np.mean(previsoes == 1)
-
-    # Sucesso entre os ataques inicialmente detectados
-    sucesso = np.mean(previsoes[detectados] == 0) if detectados.sum() > 0 else 0.0
-
-    print(f"Recall após manipulação: {recall:.4f}")
-    print(f"Taxa de evasão: {sucesso:.4f}")
-
-    resultados.append(
-        {
-            "intensidade": intensidade,
-            "recall": float(recall),
-            "taxa_evasao": float(sucesso),
-        }
-    )
-
-# 7. Salvar resultados
-dados_resultados = {
-    "amostras": len(X_original),
-    "detectados_inicialmente": int(detectados.sum()),
-    "recall_original": float(recall_original),
-    "caracteristicas": CARACTERISTICAS,
-    "experimentos": resultados,
-}
-
-with open(RESULTADOS_DIR / "resultados_ataque.json", "w", encoding="utf-8") as arquivo:
-    json.dump(dados_resultados, arquivo, indent=4)
-
-# 8. Gerar gráfico
-intensidades = [r["intensidade"] * 100 for r in resultados]
-
-taxas = [r["taxa_evasao"] * 100 for r in resultados]
-
-plt.figure(figsize=(8, 5))
-plt.plot(intensidades, taxas, marker="o")
-plt.xlabel("Intensidade da perturbação (%)")
-plt.ylabel("Taxa de evasão (%)")
-plt.title("Evasão adversarial - Random Forest")
-plt.ylim(0, 100)
-plt.grid(True, alpha=0.3)
-plt.tight_layout()
-
-plt.savefig(RESULTADOS_DIR / "grafico_ataque.png", dpi=300)
-plt.close()
-
-print("\nExperimentos concluídos!")
-print("Resultados salvos na pasta resultados.")
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--amostras', type=int, default=AMOSTRAS)
+    parser.add_argument('--tentativas', type=int, default=TENTATIVAS)
+    args = parser.parse_args()
+    if args.amostras < 1 or args.tentativas < 1:
+        parser.error('Amostras e tentativas devem ser positivas')
+    executar(args.amostras, args.tentativas)

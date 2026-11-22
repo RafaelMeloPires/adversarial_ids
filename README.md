@@ -58,7 +58,22 @@ Os arquivos JSON e PNG podem ser versionados; os `.pkl` e os arquivos CSV ficam 
 
 ## Limitações importantes
 
-- O "ataque" representa **ruído aleatório em atributos de registros**. Não é uma evasão otimizada com busca adversarial e não demonstra exploração de uma rede real.
+### Revisão do ataque (protocolo 2)
+
+O ataque agora mantém o ruído IQR histórico e inclui uma referência aleatória
+restrita e uma busca direcionada à classe normal, com 16 candidatos e retenção
+do original. Executa três sementes (42, 43 e 44) sobre os mesmos 2.000 registros.
+O orçamento de 5–30% da busca é relativo à duração e aos bytes originais;
+o orçamento do ruído histórico continua relativo ao IQR e não é equivalente.
+A busca permite apenas atraso e padding na origem, preserva bytes inteiros,
+atualiza taxas e atributos temporais relacionados e congela fluxos de duração
+zero. TTLs, categorias, contagens de pacotes e bytes de destino são imutáveis.
+Isso impõe consistência parcial; ainda não demonstra viabilidade em pacotes.
+
+Os resultados anteriores foram reproduzidos e preservados em
+`resultados/reproducao_inicial.json`. Testes: `python -m unittest discover -s tests -v`.
+
+- O ruído histórico é uma referência aleatória; a busca restrita otimiza a probabilidade prevista, sem demonstrar exploração de uma rede real.
 - A perturbação pode produzir combinações fisicamente inconsistentes entre duração, bytes e taxas; não prova a viabilidade de gerar tais fluxos de rede.
 - Treinamento com exemplos perturbados pode melhorar, não alterar ou **piorar** o recall e as falsas detecções; os resultados devem ser reportados como observados, não pressupostos.
 - O conjunto de teste nunca é usado para escolher parâmetros da defesa. Os parâmetros fixos da etapa 4 devem ser tratados como pré-definidos, evitando ajustar o modelo repetidamente pelo desempenho do teste.

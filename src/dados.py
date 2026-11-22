@@ -20,6 +20,7 @@ synack ackdat smean dmean trans_depth response_body_len ct_srv_src ct_state_ttl
 ct_dst_ltm ct_src_dport_ltm ct_dst_sport_ltm ct_dst_src_ltm is_ftp_login ct_ftp_cmd
 ct_flw_http_mthd ct_src_ltm ct_srv_dst is_sm_ips_ports attack_cat label""".split()
 ARQUIVOS = {"treino": "UNSW_NB15_training-set.csv", "teste": "UNSW_NB15_testing-set.csv"}
+CONTINUAS = "dur rate sload dload sinpkt dinpkt sjit djit tcprtt synack ackdat".split()
 
 
 def sha256(caminho):
@@ -44,6 +45,9 @@ def validar(dados, nome="dataset"):
     valores = dados[numericas].to_numpy(dtype=float)
     if not np.isfinite(valores).all() or (valores < 0).any():
         raise ValueError(f"{nome}: valores numéricos negativos ou não finitos")
+    inteiras = [c for c in numericas if c not in CONTINUAS]
+    if (dados[inteiras].to_numpy(dtype=float) % 1 != 0).any():
+        raise ValueError(f"{nome}: contagens/identificadores fracionários")
     if not dados.label.isin([0, 1]).all() or dados.label.nunique() != 2:
         raise ValueError(f"{nome}: label deve conter as duas classes 0 e 1")
     if dados.id.duplicated().any() or (dados.id % 1 != 0).any():

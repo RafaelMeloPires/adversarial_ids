@@ -1,0 +1,194 @@
+{
+  "modelo_original": {
+    "acuracia": 0.8709857649516591,
+    "precisao": 0.8176477048100154,
+    "recall": 0.9854628077296391,
+    "f1_score": 0.8937459987195903,
+    "tempo_treinamento_segundos": 122.91644263267517,
+    "matriz_confusao": [
+      [
+        27037,
+        9963
+      ],
+      [
+        659,
+        44673
+      ]
+    ]
+  },
+  "ataque_aleatorio": {
+    "amostras": 2000,
+    "detectados_inicialmente": 1972,
+    "recall_original": 0.986,
+    "caracteristicas": [
+      "dur",
+      "sbytes",
+      "dbytes",
+      "rate",
+      "sload",
+      "dload"
+    ],
+    "experimentos": [
+      {
+        "intensidade": 0.05,
+        "recall": 0.993,
+        "taxa_evasao": 0.0015212981744421906
+      },
+      {
+        "intensidade": 0.1,
+        "recall": 0.9915,
+        "taxa_evasao": 0.0035496957403651115
+      },
+      {
+        "intensidade": 0.2,
+        "recall": 0.9925,
+        "taxa_evasao": 0.002028397565922921
+      },
+      {
+        "intensidade": 0.3,
+        "recall": 0.991,
+        "taxa_evasao": 0.0035496957403651115
+      }
+    ]
+  },
+  "defesa_antiga": {
+    "descricao": "Comparação empírica da robustez a ruídos sintéticos no espaço de características",
+    "configuracao": {
+      "semente_teste": 42,
+      "semente_treino": 2026,
+      "amostras_teste_maliciosas": 2000,
+      "registros_treino_originais": 175341,
+      "ataques_treino_selecionados": 23868,
+      "registros_treino_aumentados": 223077,
+      "fracao_ataques_treino": 0.2,
+      "intensidades_aumento": [
+        0.1,
+        0.3
+      ],
+      "intensidades_teste": [
+        0.05,
+        0.1,
+        0.2,
+        0.3
+      ],
+      "caracteristicas_manipuladas": [
+        "dur",
+        "sbytes",
+        "dbytes",
+        "rate",
+        "sload",
+        "dload"
+      ],
+      "tempo_treinamento_segundos": 147.7970260999864
+    },
+    "teste_limpo_completo": {
+      "modelo_original": {
+        "acuracia": 0.8709857649516591,
+        "precisao": 0.8176477048100154,
+        "recall": 0.9854628077296391,
+        "f1_score": 0.8937459987195903,
+        "matriz_confusao": [
+          [
+            27037,
+            9963
+          ],
+          [
+            659,
+            44673
+          ]
+        ]
+      },
+      "modelo_defesa": {
+        "acuracia": 0.8697104406549094,
+        "precisao": 0.8155029995806058,
+        "recall": 0.9865657813465102,
+        "f1_score": 0.8929152566060715,
+        "matriz_confusao": [
+          [
+            26882,
+            10118
+          ],
+          [
+            609,
+            44723
+          ]
+        ]
+      }
+    },
+    "teste_ataques_manipulados": {
+      "recall_inicial_modelo_original": 0.986,
+      "recall_inicial_modelo_defesa": 0.9875,
+      "detectados_inicialmente_modelo_original": 1972,
+      "detectados_inicialmente_modelo_defesa": 1975,
+      "experimentos": [
+        {
+          "intensidade": 0.05,
+          "recall_amostra_original": 0.986,
+          "recall_amostra_defesa": 0.9875,
+          "recall_modelo_original": 0.993,
+          "recall_modelo_defesa": 0.9995,
+          "delta_recall_pontos_percentuais": 0.6500000000000061,
+          "taxa_evasao_modelo_original": 0.0015212981744421906,
+          "taxa_evasao_modelo_defesa": 0.0
+        },
+        {
+          "intensidade": 0.1,
+          "recall_amostra_original": 0.986,
+          "recall_amostra_defesa": 0.9875,
+          "recall_modelo_original": 0.9915,
+          "recall_modelo_defesa": 0.9995,
+          "delta_recall_pontos_percentuais": 0.8000000000000007,
+          "taxa_evasao_modelo_original": 0.0035496957403651115,
+          "taxa_evasao_modelo_defesa": 0.0
+        },
+        {
+          "intensidade": 0.2,
+          "recall_amostra_original": 0.986,
+          "recall_amostra_defesa": 0.9875,
+          "recall_modelo_original": 0.9925,
+          "recall_modelo_defesa": 1.0,
+          "delta_recall_pontos_percentuais": 0.7499999999999951,
+          "taxa_evasao_modelo_original": 0.002028397565922921,
+          "taxa_evasao_modelo_defesa": 0.0
+        },
+        {
+          "intensidade": 0.3,
+          "recall_amostra_original": 0.986,
+          "recall_amostra_defesa": 0.9875,
+          "recall_modelo_original": 0.991,
+          "recall_modelo_defesa": 1.0,
+          "delta_recall_pontos_percentuais": 0.9000000000000008,
+          "taxa_evasao_modelo_original": 0.0035496957403651115,
+          "taxa_evasao_modelo_defesa": 0.0
+        }
+      ]
+    },
+    "limitacoes": [
+      "Perturbações aleatórias em seis atributos; não há otimização contra a predição.",
+      "Não se garante consistência entre atributos correlacionados nem viabilidade como pacotes reais.",
+      "A taxa de evasão usa apenas os ataques inicialmente detectados por cada modelo; os denominadores podem diferir."
+    ]
+  },
+  "proveniencia": {
+    "python": "3.14.3",
+    "dependencias": {
+      "numpy": "2.5.5",
+      "pandas": "3.1.1",
+      "scikit-learn": "1.9.1",
+      "matplotlib": "3.11.2",
+      "joblib": "1.6.0"
+    },
+    "datasets": {
+      "treino": {
+        "arquivo": "UNSW_NB15_training-set.csv",
+        "sha256": "bec7dd5ec88dc2a0ccc7a07879d338395ed7421750f675fd0339e07dfe0648fa"
+      },
+      "teste": {
+        "arquivo": "UNSW_NB15_testing-set.csv",
+        "sha256": "734fe6642edf758f7c94d7d9149426b49d202fe8e7bf0bef47392489c3c0a559"
+      }
+    }
+  },
+  "codigo_reproduzido": "6f1d18f (scripts originais das etapas 2, 3 e 4)",
+  "modelo_original_sha256": "553890d0c3ea901a2358198df2f8f2095f1a95da9538826f8f26b4bcc79a4db1"
+}
