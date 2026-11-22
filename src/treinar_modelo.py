@@ -1,3 +1,4 @@
+import argparse
 import json
 import time
 from pathlib import Path
@@ -20,14 +21,16 @@ from sklearn.metrics import (
 )
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
-from dados import carregar_dados, proveniencia
+from dados import carregar_dados, proveniencia, sha256
 
 # Caminhos do projeto
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = BASE_DIR / "data"
-RESULTADOS_DIR = BASE_DIR / "resultados"
+parser = argparse.ArgumentParser(description="Treina o Random Forest original com as divisões oficiais")
+parser.add_argument("--saida", type=Path, default=BASE_DIR / "resultados")
+RESULTADOS_DIR = parser.parse_args().saida.resolve()
 
-RESULTADOS_DIR.mkdir(exist_ok=True)
+RESULTADOS_DIR.mkdir(parents=True, exist_ok=True)
 
 # 1. Carregamento dos dados
 print("Carregando dataset...")
@@ -128,10 +131,11 @@ metricas = {
     "taxa_falsos_positivos": float(matriz[0, 1] / matriz[0].sum()),
 }
 
+# 11. Persistir primeiro o modelo e associar as métricas ao seu hash.
+joblib.dump(modelo, RESULTADOS_DIR / "modelo_random_forest.pkl")
+metricas["modelo_sha256"] = sha256(RESULTADOS_DIR / "modelo_random_forest.pkl")
+
 with open(RESULTADOS_DIR / "metricas.json", "w", encoding="utf-8") as arquivo:
     json.dump(metricas, arquivo, indent=4)
-
-# 11. Salvamento do modelo completo
-joblib.dump(modelo, RESULTADOS_DIR / "modelo_random_forest.pkl")
 
 print("\nModelo e resultados salvos com sucesso!")

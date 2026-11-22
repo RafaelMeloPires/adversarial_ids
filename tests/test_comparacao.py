@@ -23,6 +23,10 @@ class CompatibilidadeTest(unittest.TestCase):
         diferente['proveniencia']['datasets']['treino'] = 'outro'
         with self.assertRaises(ValueError):
             conferir_compatibilidade(ataque, diferente)
+        diferente = copy.deepcopy(defesa)
+        diferente['proveniencia']['python'] = 'outra-versao'
+        with self.assertRaises(ValueError):
+            conferir_compatibilidade(ataque, diferente)
 
 
 if __name__ == '__main__':

@@ -56,6 +56,18 @@ As matrizes de confusão e métricas publicadas foram reproduzidas. O registro
 completo está em `resultados/reproducao_inicial.json`. Os protocolos têm operações
 e orçamentos diferentes; não se deve atribuir suas diferenças só à otimização.
 
+O treinamento revisado também foi repetido em uma pasta separada, produzindo
+as mesmas métricas e um modelo idêntico byte a byte. Para repetir essa conferência
+sem substituir o modelo em uso:
+
+```powershell
+python src/treinar_modelo.py --saida resultados/verificacao_baseline
+python src/verificar_reproducao.py
+```
+
+O resultado fica em `resultados/reprodutibilidade_modelo.json`. O tempo de treino
+pode variar; identidade binária não é garantida em outros ambientes/versões.
+
 ## Protocolo atual
 
 **Modelo original.** Pipeline com OneHotEncoder ajustado no treino e Random
@@ -146,6 +158,7 @@ nenhuma melhorou simultaneamente todas as métricas do modelo original.
 | --- | --- |
 | `validacao_dados.json` | Integridade, distribuição, duplicações e proveniência |
 | `reproducao_inicial.json` | Reprodução do experimento anterior |
+| `reprodutibilidade_modelo.json` | Conferência independente do novo treinamento |
 | `modelo_random_forest.pkl`, `metricas.json`, `matriz_confusao.png` | Modelo e avaliação originais |
 | `resultados_ataque.json`, `grafico_ataque.png` | Ruído, referência restrita e busca direcionada |
 | `modelo_random_forest_controle.pkl`, `modelo_random_forest_defesa.pkl` | Controle e defesa |
