@@ -55,8 +55,20 @@ class ResultadosTest(unittest.TestCase):
         modelos = self.r['treinamento']['modelos']
         self.assertEqual(modelos['controle_duplicacao']['classes'], modelos['defesa']['classes'])
         self.assertEqual(modelos['controle_duplicacao']['registros'], modelos['defesa']['registros'])
+        if not all((RESULTADOS_DIR / m['arquivo']).is_file() for m in modelos.values()):
+            self.skipTest('Modelos locais ainda não gerados')
         for m in modelos.values():
             self.assertEqual(sha256(RESULTADOS_DIR / m['arquivo']), m['sha256'])
+
+    def test_selecao_robusta_preserva_previsoes(self):
+        if 'selecao_robusta' not in self.r['teste_limpo_completo']:
+            self.skipTest('Seleção robusta ainda não avaliada')
+        for e in self.r['experimentos']:
+            if e['modelo'] == 'selecao_robusta':
+                for tipo in ['transferencia', 'adaptativo']:
+                    self.assertEqual(e[tipo]['evadiram'], 0)
+                    self.assertEqual(e[tipo]['recuperados'], 0)
+                    self.assertEqual(e[tipo]['queda_recall_pp'], 0.)
 
 
 if __name__ == '__main__':

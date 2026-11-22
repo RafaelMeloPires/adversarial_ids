@@ -17,7 +17,7 @@ def conferir_compatibilidade(ataque, defesa):
     if ataque.get('versao_protocolo') != 2 or defesa.get('versao_protocolo') != 2:
         raise ValueError('Execute as etapas 3 e 4 com o protocolo 2')
     pares = [(ataque['modelo_sha256'], defesa['configuracao']['modelo_original_sha256']),
-        (ataque['proveniencia']['datasets'], defesa['proveniencia']['datasets'])]
+        (ataque['proveniencia'], defesa['proveniencia'])]
     for c in ['ids_amostra', 'tentativas', 'intensidades']:
         pares.append((ataque['configuracao'][c], defesa['configuracao'][c]))
     pares.append((ataque['configuracao']['sementes_busca'], defesa['configuracao']['sementes_busca']))
@@ -75,7 +75,7 @@ def executar():
         valores = [defesa['teste_limpo_completo'][nome][c]*100 for c in campos]
         eixos[0].bar(x+(i-(len(nomes)-1)/2)*largura, valores, largura, label=ROTULOS[nome])
     eixos[0].set(xticks=x, xticklabels=['Acurácia', 'Precisão', 'Recall', 'F1'], ylim=(0,100), ylabel='Percentual (%)', title='Teste limpo completo: 82.332 registros')
-    eixos[0].legend(fontsize=8)
+    eixos[0].legend(fontsize=8, loc='upper center', bbox_to_anchor=(.5, -.12), ncol=2)
     valores = [defesa['teste_limpo_completo'][n]['taxa_falsos_positivos']*100 for n in nomes]
     barras = eixos[1].bar([ROTULOS[n] for n in nomes], valores)
     eixos[1].bar_label(barras, fmt='%.2f%%', padding=3)

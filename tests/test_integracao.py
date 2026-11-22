@@ -32,7 +32,7 @@ class IntegracaoDadosTest(unittest.TestCase):
         np.testing.assert_allclose(mod.dload * mod.dur, X.dload * X.dur, rtol=1e-12)
 
 
-@unittest.skipUnless((RESULTADOS_DIR / 'resultados_ataque.json').is_file(), 'Ataque ainda não executado')
+@unittest.skipUnless((RESULTADOS_DIR / 'resultados_ataque.json').is_file() and (RESULTADOS_DIR / 'modelo_random_forest.pkl').is_file(), 'Ataque/modelo local ainda não gerado')
 class IntegracaoAtaqueTest(unittest.TestCase):
     def test_resultados_reproduziveis_e_contagens(self):
         r = json.loads((RESULTADOS_DIR / 'resultados_ataque.json').read_text(encoding='utf-8'))

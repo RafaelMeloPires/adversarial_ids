@@ -90,6 +90,72 @@
             "amostras_com_probabilidade_reduzida": 22559
           }
         ]
+      },
+      "selecao_robusta": {
+        "assinatura": {
+          "versao": 1,
+          "modelo_original_sha256": "553890d0c3ea901a2358198df2f8f2095f1a95da9538826f8f26b4bcc79a4db1",
+          "dataset_treino": {
+            "arquivo": "UNSW_NB15_training-set.csv",
+            "sha256": "bec7dd5ec88dc2a0ccc7a07879d338395ed7421750f675fd0339e07dfe0648fa"
+          },
+          "excluidas": [
+            "dur",
+            "sbytes",
+            "rate",
+            "sload",
+            "dload",
+            "smean",
+            "sinpkt",
+            "dinpkt",
+            "sjit",
+            "djit",
+            "tcprtt",
+            "synack",
+            "ackdat"
+          ],
+          "codigo_sha256": "613d981c80299ac7a940ee7e9b9fc1352ed52ab808a3e20e72f50876fec2b82c"
+        },
+        "arquivo": "modelo_random_forest_selecao.pkl",
+        "sha256": "a213d57c010b19e768a4393ba4fb937ada66d4e34324ddbe02dfd40fa53cc394",
+        "tempo_treinamento_segundos": 149.17425149999326,
+        "registros": 175341,
+        "classes": {
+          "1": 119341,
+          "0": 56000
+        },
+        "atributos_retidos": [
+          "proto",
+          "service",
+          "state",
+          "spkts",
+          "dpkts",
+          "dbytes",
+          "sttl",
+          "dttl",
+          "sloss",
+          "dloss",
+          "swin",
+          "stcpb",
+          "dtcpb",
+          "dwin",
+          "dmean",
+          "trans_depth",
+          "response_body_len",
+          "ct_srv_src",
+          "ct_state_ttl",
+          "ct_dst_ltm",
+          "ct_src_dport_ltm",
+          "ct_dst_sport_ltm",
+          "ct_dst_src_ltm",
+          "is_ftp_login",
+          "ct_ftp_cmd",
+          "ct_flw_http_mthd",
+          "ct_src_ltm",
+          "ct_srv_dst",
+          "is_sm_ips_ports"
+        ],
+        "garantia": "Invariância às alterações apenas nos atributos excluídos, sem garantia contra outros ataques."
       }
     }
   },
@@ -2110,7 +2176,7 @@
       64421,
       4443
     ],
-    "denominador_comum": 1965,
+    "denominador_comum": 1945,
     "modelo_original_sha256": "553890d0c3ea901a2358198df2f8f2095f1a95da9538826f8f26b4bcc79a4db1",
     "politica_parametros": "Fixos antes da execução; sem seleção pelo desempenho de teste. Ajustes futuros exigem validação separada do treino."
   },
@@ -2169,6 +2235,25 @@
         [
           476,
           44856
+        ]
+      ]
+    },
+    "selecao_robusta": {
+      "amostras": 82332,
+      "acuracia": 0.8617184083952777,
+      "precisao": 0.809978632868857,
+      "recall": 0.9783817171093268,
+      "f1_score": 0.8862512363996043,
+      "taxa_falsos_positivos": 0.28121621621621623,
+      "taxa_falsos_negativos": 0.021618282890673256,
+      "matriz_confusao": [
+        [
+          26595,
+          10405
+        ],
+        [
+          980,
+          44352
         ]
       ]
     }
@@ -2299,6 +2384,48 @@
         "suporte": 44,
         "taxa_prevista_ataque": 1.0
       }
+    },
+    "selecao_robusta": {
+      "Analysis": {
+        "suporte": 677,
+        "taxa_prevista_ataque": 1.0
+      },
+      "Backdoor": {
+        "suporte": 583,
+        "taxa_prevista_ataque": 1.0
+      },
+      "DoS": {
+        "suporte": 4089,
+        "taxa_prevista_ataque": 0.9975544142822206
+      },
+      "Exploits": {
+        "suporte": 11132,
+        "taxa_prevista_ataque": 0.9949694574200503
+      },
+      "Fuzzers": {
+        "suporte": 6062,
+        "taxa_prevista_ataque": 0.8536786539096007
+      },
+      "Generic": {
+        "suporte": 18871,
+        "taxa_prevista_ataque": 0.9997350431879604
+      },
+      "Normal": {
+        "suporte": 37000,
+        "taxa_prevista_ataque": 0.28121621621621623
+      },
+      "Reconnaissance": {
+        "suporte": 3496,
+        "taxa_prevista_ataque": 0.9948512585812357
+      },
+      "Shellcode": {
+        "suporte": 378,
+        "taxa_prevista_ataque": 0.9894179894179894
+      },
+      "Worms": {
+        "suporte": 44,
+        "taxa_prevista_ataque": 1.0
+      }
     }
   },
   "teste_sem_entradas_identicas_ao_treino": {
@@ -2360,13 +2487,33 @@
             37803
           ]
         ]
+      },
+      "selecao_robusta": {
+        "amostras": 73791,
+        "acuracia": 0.8533018931848058,
+        "precisao": 0.7909156452775775,
+        "recall": 0.974779813396754,
+        "f1_score": 0.8732747216726566,
+        "taxa_falsos_positivos": 0.2775275838775051,
+        "taxa_falsos_negativos": 0.025220186603245955,
+        "matriz_confusao": [
+          [
+            25668,
+            9860
+          ],
+          [
+            965,
+            37298
+          ]
+        ]
       }
     }
   },
   "recall_amostra_limpa": {
     "original": 0.986,
     "controle_duplicacao": 0.987,
-    "defesa": 0.9885
+    "defesa": 0.9885,
+    "selecao_robusta": 0.983
   },
   "experimentos": [
     {
@@ -2390,9 +2537,9 @@
         "denominador_evasao": 1972,
         "taxa_evasao": 0.006085192697768763,
         "recuperados": 0,
-        "taxa_evasao_comum": 0.0035623409669211198,
-        "evadiram_comum": 7,
-        "denominador_comum": 1965
+        "taxa_evasao_comum": 0.002056555269922879,
+        "evadiram_comum": 4,
+        "denominador_comum": 1945
       },
       "adaptativo": {
         "amostras_maliciosas": 2000,
@@ -2405,9 +2552,9 @@
         "denominador_evasao": 1972,
         "taxa_evasao": 0.006085192697768763,
         "recuperados": 0,
-        "taxa_evasao_comum": 0.0035623409669211198,
-        "evadiram_comum": 7,
-        "denominador_comum": 1965
+        "taxa_evasao_comum": 0.002056555269922879,
+        "evadiram_comum": 4,
+        "denominador_comum": 1945
       }
     },
     {
@@ -2431,9 +2578,9 @@
         "denominador_evasao": 1974,
         "taxa_evasao": 0.0025329280648429585,
         "recuperados": 0,
-        "taxa_evasao_comum": 0.0010178117048346056,
+        "taxa_evasao_comum": 0.0010282776349614395,
         "evadiram_comum": 2,
-        "denominador_comum": 1965
+        "denominador_comum": 1945
       },
       "adaptativo": {
         "amostras_maliciosas": 2000,
@@ -2446,9 +2593,9 @@
         "denominador_evasao": 1974,
         "taxa_evasao": 0.004052684903748734,
         "recuperados": 0,
-        "taxa_evasao_comum": 0.002035623409669211,
+        "taxa_evasao_comum": 0.002056555269922879,
         "evadiram_comum": 4,
-        "denominador_comum": 1965
+        "denominador_comum": 1945
       }
     },
     {
@@ -2474,7 +2621,7 @@
         "recuperados": 2,
         "taxa_evasao_comum": 0.0,
         "evadiram_comum": 0,
-        "denominador_comum": 1965
+        "denominador_comum": 1945
       },
       "adaptativo": {
         "amostras_maliciosas": 2000,
@@ -2487,9 +2634,50 @@
         "denominador_evasao": 1977,
         "taxa_evasao": 0.0015174506828528073,
         "recuperados": 0,
-        "taxa_evasao_comum": 0.0005089058524173028,
+        "taxa_evasao_comum": 0.0005141388174807198,
         "evadiram_comum": 1,
-        "denominador_comum": 1965
+        "denominador_comum": 1945
+      }
+    },
+    {
+      "semente": 42,
+      "intensidade": 0.05,
+      "modelo": "selecao_robusta",
+      "consultas": {
+        "consultas_por_amostra": 17,
+        "probabilidade_media_antes": 0.9481916089923916,
+        "probabilidade_media_depois": 0.9481916089923916,
+        "amostras_com_probabilidade_reduzida": 42
+      },
+      "transferencia": {
+        "amostras_maliciosas": 2000,
+        "detectados_antes": 1966,
+        "detectados_depois": 1966,
+        "recall_antes": 0.983,
+        "recall": 0.983,
+        "queda_recall_pp": 0.0,
+        "evadiram": 0,
+        "denominador_evasao": 1966,
+        "taxa_evasao": 0.0,
+        "recuperados": 0,
+        "taxa_evasao_comum": 0.0,
+        "evadiram_comum": 0,
+        "denominador_comum": 1945
+      },
+      "adaptativo": {
+        "amostras_maliciosas": 2000,
+        "detectados_antes": 1966,
+        "detectados_depois": 1966,
+        "recall_antes": 0.983,
+        "recall": 0.983,
+        "queda_recall_pp": 0.0,
+        "evadiram": 0,
+        "denominador_evasao": 1966,
+        "taxa_evasao": 0.0,
+        "recuperados": 0,
+        "taxa_evasao_comum": 0.0,
+        "evadiram_comum": 0,
+        "denominador_comum": 1945
       }
     },
     {
@@ -2513,9 +2701,9 @@
         "denominador_evasao": 1972,
         "taxa_evasao": 0.007099391480730223,
         "recuperados": 0,
-        "taxa_evasao_comum": 0.0055979643765903305,
-        "evadiram_comum": 11,
-        "denominador_comum": 1965
+        "taxa_evasao_comum": 0.0035989717223650387,
+        "evadiram_comum": 7,
+        "denominador_comum": 1945
       },
       "adaptativo": {
         "amostras_maliciosas": 2000,
@@ -2528,9 +2716,9 @@
         "denominador_evasao": 1972,
         "taxa_evasao": 0.007099391480730223,
         "recuperados": 0,
-        "taxa_evasao_comum": 0.0055979643765903305,
-        "evadiram_comum": 11,
-        "denominador_comum": 1965
+        "taxa_evasao_comum": 0.0035989717223650387,
+        "evadiram_comum": 7,
+        "denominador_comum": 1945
       }
     },
     {
@@ -2554,9 +2742,9 @@
         "denominador_evasao": 1974,
         "taxa_evasao": 0.005572441742654508,
         "recuperados": 1,
-        "taxa_evasao_comum": 0.0030534351145038168,
-        "evadiram_comum": 6,
-        "denominador_comum": 1965
+        "taxa_evasao_comum": 0.002570694087403599,
+        "evadiram_comum": 5,
+        "denominador_comum": 1945
       },
       "adaptativo": {
         "amostras_maliciosas": 2000,
@@ -2569,9 +2757,9 @@
         "denominador_evasao": 1974,
         "taxa_evasao": 0.0070921985815602835,
         "recuperados": 0,
-        "taxa_evasao_comum": 0.004580152671755725,
-        "evadiram_comum": 9,
-        "denominador_comum": 1965
+        "taxa_evasao_comum": 0.004113110539845758,
+        "evadiram_comum": 8,
+        "denominador_comum": 1945
       }
     },
     {
@@ -2597,7 +2785,7 @@
         "recuperados": 3,
         "taxa_evasao_comum": 0.0,
         "evadiram_comum": 0,
-        "denominador_comum": 1965
+        "denominador_comum": 1945
       },
       "adaptativo": {
         "amostras_maliciosas": 2000,
@@ -2610,9 +2798,50 @@
         "denominador_evasao": 1977,
         "taxa_evasao": 0.0015174506828528073,
         "recuperados": 0,
-        "taxa_evasao_comum": 0.0010178117048346056,
+        "taxa_evasao_comum": 0.0010282776349614395,
         "evadiram_comum": 2,
-        "denominador_comum": 1965
+        "denominador_comum": 1945
+      }
+    },
+    {
+      "semente": 42,
+      "intensidade": 0.1,
+      "modelo": "selecao_robusta",
+      "consultas": {
+        "consultas_por_amostra": 17,
+        "probabilidade_media_antes": 0.9481916089923916,
+        "probabilidade_media_depois": 0.9481916089923916,
+        "amostras_com_probabilidade_reduzida": 48
+      },
+      "transferencia": {
+        "amostras_maliciosas": 2000,
+        "detectados_antes": 1966,
+        "detectados_depois": 1966,
+        "recall_antes": 0.983,
+        "recall": 0.983,
+        "queda_recall_pp": 0.0,
+        "evadiram": 0,
+        "denominador_evasao": 1966,
+        "taxa_evasao": 0.0,
+        "recuperados": 0,
+        "taxa_evasao_comum": 0.0,
+        "evadiram_comum": 0,
+        "denominador_comum": 1945
+      },
+      "adaptativo": {
+        "amostras_maliciosas": 2000,
+        "detectados_antes": 1966,
+        "detectados_depois": 1966,
+        "recall_antes": 0.983,
+        "recall": 0.983,
+        "queda_recall_pp": 0.0,
+        "evadiram": 0,
+        "denominador_evasao": 1966,
+        "taxa_evasao": 0.0,
+        "recuperados": 0,
+        "taxa_evasao_comum": 0.0,
+        "evadiram_comum": 0,
+        "denominador_comum": 1945
       }
     },
     {
@@ -2636,9 +2865,9 @@
         "denominador_evasao": 1972,
         "taxa_evasao": 0.009127789046653144,
         "recuperados": 0,
-        "taxa_evasao_comum": 0.0071246819338422395,
-        "evadiram_comum": 14,
-        "denominador_comum": 1965
+        "taxa_evasao_comum": 0.005141388174807198,
+        "evadiram_comum": 10,
+        "denominador_comum": 1945
       },
       "adaptativo": {
         "amostras_maliciosas": 2000,
@@ -2651,9 +2880,9 @@
         "denominador_evasao": 1972,
         "taxa_evasao": 0.009127789046653144,
         "recuperados": 0,
-        "taxa_evasao_comum": 0.0071246819338422395,
-        "evadiram_comum": 14,
-        "denominador_comum": 1965
+        "taxa_evasao_comum": 0.005141388174807198,
+        "evadiram_comum": 10,
+        "denominador_comum": 1945
       }
     },
     {
@@ -2677,9 +2906,9 @@
         "denominador_evasao": 1974,
         "taxa_evasao": 0.005572441742654508,
         "recuperados": 1,
-        "taxa_evasao_comum": 0.0035623409669211198,
-        "evadiram_comum": 7,
-        "denominador_comum": 1965
+        "taxa_evasao_comum": 0.003084832904884319,
+        "evadiram_comum": 6,
+        "denominador_comum": 1945
       },
       "adaptativo": {
         "amostras_maliciosas": 2000,
@@ -2692,9 +2921,9 @@
         "denominador_evasao": 1974,
         "taxa_evasao": 0.010131712259371834,
         "recuperados": 0,
-        "taxa_evasao_comum": 0.0071246819338422395,
-        "evadiram_comum": 14,
-        "denominador_comum": 1965
+        "taxa_evasao_comum": 0.006169665809768638,
+        "evadiram_comum": 12,
+        "denominador_comum": 1945
       }
     },
     {
@@ -2718,9 +2947,9 @@
         "denominador_evasao": 1977,
         "taxa_evasao": 0.0020232675771370764,
         "recuperados": 5,
-        "taxa_evasao_comum": 0.0015267175572519084,
-        "evadiram_comum": 3,
-        "denominador_comum": 1965
+        "taxa_evasao_comum": 0.0010282776349614395,
+        "evadiram_comum": 2,
+        "denominador_comum": 1945
       },
       "adaptativo": {
         "amostras_maliciosas": 2000,
@@ -2733,9 +2962,50 @@
         "denominador_evasao": 1977,
         "taxa_evasao": 0.0030349013657056147,
         "recuperados": 0,
-        "taxa_evasao_comum": 0.002544529262086514,
-        "evadiram_comum": 5,
-        "denominador_comum": 1965
+        "taxa_evasao_comum": 0.002056555269922879,
+        "evadiram_comum": 4,
+        "denominador_comum": 1945
+      }
+    },
+    {
+      "semente": 42,
+      "intensidade": 0.2,
+      "modelo": "selecao_robusta",
+      "consultas": {
+        "consultas_por_amostra": 17,
+        "probabilidade_media_antes": 0.9481916089923916,
+        "probabilidade_media_depois": 0.9481916089923916,
+        "amostras_com_probabilidade_reduzida": 60
+      },
+      "transferencia": {
+        "amostras_maliciosas": 2000,
+        "detectados_antes": 1966,
+        "detectados_depois": 1966,
+        "recall_antes": 0.983,
+        "recall": 0.983,
+        "queda_recall_pp": 0.0,
+        "evadiram": 0,
+        "denominador_evasao": 1966,
+        "taxa_evasao": 0.0,
+        "recuperados": 0,
+        "taxa_evasao_comum": 0.0,
+        "evadiram_comum": 0,
+        "denominador_comum": 1945
+      },
+      "adaptativo": {
+        "amostras_maliciosas": 2000,
+        "detectados_antes": 1966,
+        "detectados_depois": 1966,
+        "recall_antes": 0.983,
+        "recall": 0.983,
+        "queda_recall_pp": 0.0,
+        "evadiram": 0,
+        "denominador_evasao": 1966,
+        "taxa_evasao": 0.0,
+        "recuperados": 0,
+        "taxa_evasao_comum": 0.0,
+        "evadiram_comum": 0,
+        "denominador_comum": 1945
       }
     },
     {
@@ -2759,9 +3029,9 @@
         "denominador_evasao": 1972,
         "taxa_evasao": 0.011663286004056795,
         "recuperados": 0,
-        "taxa_evasao_comum": 0.00916030534351145,
-        "evadiram_comum": 18,
-        "denominador_comum": 1965
+        "taxa_evasao_comum": 0.006169665809768638,
+        "evadiram_comum": 12,
+        "denominador_comum": 1945
       },
       "adaptativo": {
         "amostras_maliciosas": 2000,
@@ -2774,9 +3044,9 @@
         "denominador_evasao": 1972,
         "taxa_evasao": 0.011663286004056795,
         "recuperados": 0,
-        "taxa_evasao_comum": 0.00916030534351145,
-        "evadiram_comum": 18,
-        "denominador_comum": 1965
+        "taxa_evasao_comum": 0.006169665809768638,
+        "evadiram_comum": 12,
+        "denominador_comum": 1945
       }
     },
     {
@@ -2800,9 +3070,9 @@
         "denominador_evasao": 1974,
         "taxa_evasao": 0.008611955420466059,
         "recuperados": 3,
-        "taxa_evasao_comum": 0.0071246819338422395,
-        "evadiram_comum": 14,
-        "denominador_comum": 1965
+        "taxa_evasao_comum": 0.005141388174807198,
+        "evadiram_comum": 10,
+        "denominador_comum": 1945
       },
       "adaptativo": {
         "amostras_maliciosas": 2000,
@@ -2815,9 +3085,9 @@
         "denominador_evasao": 1974,
         "taxa_evasao": 0.014184397163120567,
         "recuperados": 0,
-        "taxa_evasao_comum": 0.011195928753180661,
-        "evadiram_comum": 22,
-        "denominador_comum": 1965
+        "taxa_evasao_comum": 0.008740359897172237,
+        "evadiram_comum": 17,
+        "denominador_comum": 1945
       }
     },
     {
@@ -2841,9 +3111,9 @@
         "denominador_evasao": 1977,
         "taxa_evasao": 0.0030349013657056147,
         "recuperados": 3,
-        "taxa_evasao_comum": 0.002544529262086514,
-        "evadiram_comum": 5,
-        "denominador_comum": 1965
+        "taxa_evasao_comum": 0.0010282776349614395,
+        "evadiram_comum": 2,
+        "denominador_comum": 1945
       },
       "adaptativo": {
         "amostras_maliciosas": 2000,
@@ -2856,9 +3126,50 @@
         "denominador_evasao": 1977,
         "taxa_evasao": 0.0035407182599898838,
         "recuperados": 0,
-        "taxa_evasao_comum": 0.0030534351145038168,
-        "evadiram_comum": 6,
-        "denominador_comum": 1965
+        "taxa_evasao_comum": 0.0015424164524421595,
+        "evadiram_comum": 3,
+        "denominador_comum": 1945
+      }
+    },
+    {
+      "semente": 42,
+      "intensidade": 0.3,
+      "modelo": "selecao_robusta",
+      "consultas": {
+        "consultas_por_amostra": 17,
+        "probabilidade_media_antes": 0.9481916089923916,
+        "probabilidade_media_depois": 0.9481916089923916,
+        "amostras_com_probabilidade_reduzida": 47
+      },
+      "transferencia": {
+        "amostras_maliciosas": 2000,
+        "detectados_antes": 1966,
+        "detectados_depois": 1966,
+        "recall_antes": 0.983,
+        "recall": 0.983,
+        "queda_recall_pp": 0.0,
+        "evadiram": 0,
+        "denominador_evasao": 1966,
+        "taxa_evasao": 0.0,
+        "recuperados": 0,
+        "taxa_evasao_comum": 0.0,
+        "evadiram_comum": 0,
+        "denominador_comum": 1945
+      },
+      "adaptativo": {
+        "amostras_maliciosas": 2000,
+        "detectados_antes": 1966,
+        "detectados_depois": 1966,
+        "recall_antes": 0.983,
+        "recall": 0.983,
+        "queda_recall_pp": 0.0,
+        "evadiram": 0,
+        "denominador_evasao": 1966,
+        "taxa_evasao": 0.0,
+        "recuperados": 0,
+        "taxa_evasao_comum": 0.0,
+        "evadiram_comum": 0,
+        "denominador_comum": 1945
       }
     },
     {
@@ -2882,9 +3193,9 @@
         "denominador_evasao": 1972,
         "taxa_evasao": 0.006592292089249493,
         "recuperados": 0,
-        "taxa_evasao_comum": 0.004071246819338422,
-        "evadiram_comum": 8,
-        "denominador_comum": 1965
+        "taxa_evasao_comum": 0.002570694087403599,
+        "evadiram_comum": 5,
+        "denominador_comum": 1945
       },
       "adaptativo": {
         "amostras_maliciosas": 2000,
@@ -2897,9 +3208,9 @@
         "denominador_evasao": 1972,
         "taxa_evasao": 0.006592292089249493,
         "recuperados": 0,
-        "taxa_evasao_comum": 0.004071246819338422,
-        "evadiram_comum": 8,
-        "denominador_comum": 1965
+        "taxa_evasao_comum": 0.002570694087403599,
+        "evadiram_comum": 5,
+        "denominador_comum": 1945
       }
     },
     {
@@ -2910,7 +3221,7 @@
         "consultas_por_amostra": 17,
         "probabilidade_media_antes": 0.953440257756949,
         "probabilidade_media_depois": 0.9322959371004383,
-        "amostras_com_probabilidade_reduzida": 1045
+        "amostras_com_probabilidade_reduzida": 1044
       },
       "transferencia": {
         "amostras_maliciosas": 2000,
@@ -2923,9 +3234,9 @@
         "denominador_evasao": 1974,
         "taxa_evasao": 0.0025329280648429585,
         "recuperados": 0,
-        "taxa_evasao_comum": 0.0010178117048346056,
+        "taxa_evasao_comum": 0.0010282776349614395,
         "evadiram_comum": 2,
-        "denominador_comum": 1965
+        "denominador_comum": 1945
       },
       "adaptativo": {
         "amostras_maliciosas": 2000,
@@ -2938,9 +3249,9 @@
         "denominador_evasao": 1974,
         "taxa_evasao": 0.004052684903748734,
         "recuperados": 0,
-        "taxa_evasao_comum": 0.002544529262086514,
+        "taxa_evasao_comum": 0.002570694087403599,
         "evadiram_comum": 5,
-        "denominador_comum": 1965
+        "denominador_comum": 1945
       }
     },
     {
@@ -2966,7 +3277,7 @@
         "recuperados": 2,
         "taxa_evasao_comum": 0.0,
         "evadiram_comum": 0,
-        "denominador_comum": 1965
+        "denominador_comum": 1945
       },
       "adaptativo": {
         "amostras_maliciosas": 2000,
@@ -2979,9 +3290,50 @@
         "denominador_evasao": 1977,
         "taxa_evasao": 0.0015174506828528073,
         "recuperados": 0,
-        "taxa_evasao_comum": 0.0005089058524173028,
+        "taxa_evasao_comum": 0.0005141388174807198,
         "evadiram_comum": 1,
-        "denominador_comum": 1965
+        "denominador_comum": 1945
+      }
+    },
+    {
+      "semente": 43,
+      "intensidade": 0.05,
+      "modelo": "selecao_robusta",
+      "consultas": {
+        "consultas_por_amostra": 17,
+        "probabilidade_media_antes": 0.9481916089923916,
+        "probabilidade_media_depois": 0.9481916089923916,
+        "amostras_com_probabilidade_reduzida": 26
+      },
+      "transferencia": {
+        "amostras_maliciosas": 2000,
+        "detectados_antes": 1966,
+        "detectados_depois": 1966,
+        "recall_antes": 0.983,
+        "recall": 0.983,
+        "queda_recall_pp": 0.0,
+        "evadiram": 0,
+        "denominador_evasao": 1966,
+        "taxa_evasao": 0.0,
+        "recuperados": 0,
+        "taxa_evasao_comum": 0.0,
+        "evadiram_comum": 0,
+        "denominador_comum": 1945
+      },
+      "adaptativo": {
+        "amostras_maliciosas": 2000,
+        "detectados_antes": 1966,
+        "detectados_depois": 1966,
+        "recall_antes": 0.983,
+        "recall": 0.983,
+        "queda_recall_pp": 0.0,
+        "evadiram": 0,
+        "denominador_evasao": 1966,
+        "taxa_evasao": 0.0,
+        "recuperados": 0,
+        "taxa_evasao_comum": 0.0,
+        "evadiram_comum": 0,
+        "denominador_comum": 1945
       }
     },
     {
@@ -3005,9 +3357,9 @@
         "denominador_evasao": 1972,
         "taxa_evasao": 0.008620689655172414,
         "recuperados": 0,
-        "taxa_evasao_comum": 0.0061068702290076335,
-        "evadiram_comum": 12,
-        "denominador_comum": 1965
+        "taxa_evasao_comum": 0.004627249357326478,
+        "evadiram_comum": 9,
+        "denominador_comum": 1945
       },
       "adaptativo": {
         "amostras_maliciosas": 2000,
@@ -3020,9 +3372,9 @@
         "denominador_evasao": 1972,
         "taxa_evasao": 0.008620689655172414,
         "recuperados": 0,
-        "taxa_evasao_comum": 0.0061068702290076335,
-        "evadiram_comum": 12,
-        "denominador_comum": 1965
+        "taxa_evasao_comum": 0.004627249357326478,
+        "evadiram_comum": 9,
+        "denominador_comum": 1945
       }
     },
     {
@@ -3046,9 +3398,9 @@
         "denominador_evasao": 1974,
         "taxa_evasao": 0.004559270516717325,
         "recuperados": 1,
-        "taxa_evasao_comum": 0.002035623409669211,
+        "taxa_evasao_comum": 0.002056555269922879,
         "evadiram_comum": 4,
-        "denominador_comum": 1965
+        "denominador_comum": 1945
       },
       "adaptativo": {
         "amostras_maliciosas": 2000,
@@ -3061,9 +3413,9 @@
         "denominador_evasao": 1974,
         "taxa_evasao": 0.0070921985815602835,
         "recuperados": 0,
-        "taxa_evasao_comum": 0.004580152671755725,
-        "evadiram_comum": 9,
-        "denominador_comum": 1965
+        "taxa_evasao_comum": 0.004113110539845758,
+        "evadiram_comum": 8,
+        "denominador_comum": 1945
       }
     },
     {
@@ -3089,7 +3441,7 @@
         "recuperados": 3,
         "taxa_evasao_comum": 0.0,
         "evadiram_comum": 0,
-        "denominador_comum": 1965
+        "denominador_comum": 1945
       },
       "adaptativo": {
         "amostras_maliciosas": 2000,
@@ -3102,9 +3454,50 @@
         "denominador_evasao": 1977,
         "taxa_evasao": 0.0015174506828528073,
         "recuperados": 0,
-        "taxa_evasao_comum": 0.0010178117048346056,
+        "taxa_evasao_comum": 0.0010282776349614395,
         "evadiram_comum": 2,
-        "denominador_comum": 1965
+        "denominador_comum": 1945
+      }
+    },
+    {
+      "semente": 43,
+      "intensidade": 0.1,
+      "modelo": "selecao_robusta",
+      "consultas": {
+        "consultas_por_amostra": 17,
+        "probabilidade_media_antes": 0.9481916089923916,
+        "probabilidade_media_depois": 0.9481916089923916,
+        "amostras_com_probabilidade_reduzida": 47
+      },
+      "transferencia": {
+        "amostras_maliciosas": 2000,
+        "detectados_antes": 1966,
+        "detectados_depois": 1966,
+        "recall_antes": 0.983,
+        "recall": 0.983,
+        "queda_recall_pp": 0.0,
+        "evadiram": 0,
+        "denominador_evasao": 1966,
+        "taxa_evasao": 0.0,
+        "recuperados": 0,
+        "taxa_evasao_comum": 0.0,
+        "evadiram_comum": 0,
+        "denominador_comum": 1945
+      },
+      "adaptativo": {
+        "amostras_maliciosas": 2000,
+        "detectados_antes": 1966,
+        "detectados_depois": 1966,
+        "recall_antes": 0.983,
+        "recall": 0.983,
+        "queda_recall_pp": 0.0,
+        "evadiram": 0,
+        "denominador_evasao": 1966,
+        "taxa_evasao": 0.0,
+        "recuperados": 0,
+        "taxa_evasao_comum": 0.0,
+        "evadiram_comum": 0,
+        "denominador_comum": 1945
       }
     },
     {
@@ -3128,9 +3521,9 @@
         "denominador_evasao": 1972,
         "taxa_evasao": 0.012170385395537525,
         "recuperados": 0,
-        "taxa_evasao_comum": 0.010178117048346057,
-        "evadiram_comum": 20,
-        "denominador_comum": 1965
+        "taxa_evasao_comum": 0.007712082262210797,
+        "evadiram_comum": 15,
+        "denominador_comum": 1945
       },
       "adaptativo": {
         "amostras_maliciosas": 2000,
@@ -3143,9 +3536,9 @@
         "denominador_evasao": 1972,
         "taxa_evasao": 0.012170385395537525,
         "recuperados": 0,
-        "taxa_evasao_comum": 0.010178117048346057,
-        "evadiram_comum": 20,
-        "denominador_comum": 1965
+        "taxa_evasao_comum": 0.007712082262210797,
+        "evadiram_comum": 15,
+        "denominador_comum": 1945
       }
     },
     {
@@ -3169,9 +3562,9 @@
         "denominador_evasao": 1974,
         "taxa_evasao": 0.005572441742654508,
         "recuperados": 2,
-        "taxa_evasao_comum": 0.004071246819338422,
-        "evadiram_comum": 8,
-        "denominador_comum": 1965
+        "taxa_evasao_comum": 0.0035989717223650387,
+        "evadiram_comum": 7,
+        "denominador_comum": 1945
       },
       "adaptativo": {
         "amostras_maliciosas": 2000,
@@ -3184,9 +3577,9 @@
         "denominador_evasao": 1974,
         "taxa_evasao": 0.010638297872340425,
         "recuperados": 0,
-        "taxa_evasao_comum": 0.008142493638676845,
-        "evadiram_comum": 16,
-        "denominador_comum": 1965
+        "taxa_evasao_comum": 0.0071979434447300775,
+        "evadiram_comum": 14,
+        "denominador_comum": 1945
       }
     },
     {
@@ -3210,9 +3603,9 @@
         "denominador_evasao": 1977,
         "taxa_evasao": 0.0025290844714213456,
         "recuperados": 4,
-        "taxa_evasao_comum": 0.002035623409669211,
-        "evadiram_comum": 4,
-        "denominador_comum": 1965
+        "taxa_evasao_comum": 0.0015424164524421595,
+        "evadiram_comum": 3,
+        "denominador_comum": 1945
       },
       "adaptativo": {
         "amostras_maliciosas": 2000,
@@ -3225,9 +3618,50 @@
         "denominador_evasao": 1977,
         "taxa_evasao": 0.0035407182599898838,
         "recuperados": 0,
-        "taxa_evasao_comum": 0.0030534351145038168,
-        "evadiram_comum": 6,
-        "denominador_comum": 1965
+        "taxa_evasao_comum": 0.002570694087403599,
+        "evadiram_comum": 5,
+        "denominador_comum": 1945
+      }
+    },
+    {
+      "semente": 43,
+      "intensidade": 0.2,
+      "modelo": "selecao_robusta",
+      "consultas": {
+        "consultas_por_amostra": 17,
+        "probabilidade_media_antes": 0.9481916089923916,
+        "probabilidade_media_depois": 0.9481916089923916,
+        "amostras_com_probabilidade_reduzida": 56
+      },
+      "transferencia": {
+        "amostras_maliciosas": 2000,
+        "detectados_antes": 1966,
+        "detectados_depois": 1966,
+        "recall_antes": 0.983,
+        "recall": 0.983,
+        "queda_recall_pp": 0.0,
+        "evadiram": 0,
+        "denominador_evasao": 1966,
+        "taxa_evasao": 0.0,
+        "recuperados": 0,
+        "taxa_evasao_comum": 0.0,
+        "evadiram_comum": 0,
+        "denominador_comum": 1945
+      },
+      "adaptativo": {
+        "amostras_maliciosas": 2000,
+        "detectados_antes": 1966,
+        "detectados_depois": 1966,
+        "recall_antes": 0.983,
+        "recall": 0.983,
+        "queda_recall_pp": 0.0,
+        "evadiram": 0,
+        "denominador_evasao": 1966,
+        "taxa_evasao": 0.0,
+        "recuperados": 0,
+        "taxa_evasao_comum": 0.0,
+        "evadiram_comum": 0,
+        "denominador_comum": 1945
       }
     },
     {
@@ -3251,9 +3685,9 @@
         "denominador_evasao": 1972,
         "taxa_evasao": 0.011156186612576065,
         "recuperados": 0,
-        "taxa_evasao_comum": 0.00916030534351145,
-        "evadiram_comum": 18,
-        "denominador_comum": 1965
+        "taxa_evasao_comum": 0.006169665809768638,
+        "evadiram_comum": 12,
+        "denominador_comum": 1945
       },
       "adaptativo": {
         "amostras_maliciosas": 2000,
@@ -3266,9 +3700,9 @@
         "denominador_evasao": 1972,
         "taxa_evasao": 0.011156186612576065,
         "recuperados": 0,
-        "taxa_evasao_comum": 0.00916030534351145,
-        "evadiram_comum": 18,
-        "denominador_comum": 1965
+        "taxa_evasao_comum": 0.006169665809768638,
+        "evadiram_comum": 12,
+        "denominador_comum": 1945
       }
     },
     {
@@ -3292,9 +3726,9 @@
         "denominador_evasao": 1974,
         "taxa_evasao": 0.009625126646403243,
         "recuperados": 1,
-        "taxa_evasao_comum": 0.007633587786259542,
-        "evadiram_comum": 15,
-        "denominador_comum": 1965
+        "taxa_evasao_comum": 0.005655526992287918,
+        "evadiram_comum": 11,
+        "denominador_comum": 1945
       },
       "adaptativo": {
         "amostras_maliciosas": 2000,
@@ -3307,9 +3741,9 @@
         "denominador_evasao": 1974,
         "taxa_evasao": 0.014184397163120567,
         "recuperados": 0,
-        "taxa_evasao_comum": 0.012213740458015267,
-        "evadiram_comum": 24,
-        "denominador_comum": 1965
+        "taxa_evasao_comum": 0.010282776349614395,
+        "evadiram_comum": 20,
+        "denominador_comum": 1945
       }
     },
     {
@@ -3333,9 +3767,9 @@
         "denominador_evasao": 1977,
         "taxa_evasao": 0.0030349013657056147,
         "recuperados": 2,
-        "taxa_evasao_comum": 0.002544529262086514,
-        "evadiram_comum": 5,
-        "denominador_comum": 1965
+        "taxa_evasao_comum": 0.0010282776349614395,
+        "evadiram_comum": 2,
+        "denominador_comum": 1945
       },
       "adaptativo": {
         "amostras_maliciosas": 2000,
@@ -3348,9 +3782,50 @@
         "denominador_evasao": 1977,
         "taxa_evasao": 0.0035407182599898838,
         "recuperados": 0,
-        "taxa_evasao_comum": 0.0030534351145038168,
-        "evadiram_comum": 6,
-        "denominador_comum": 1965
+        "taxa_evasao_comum": 0.0015424164524421595,
+        "evadiram_comum": 3,
+        "denominador_comum": 1945
+      }
+    },
+    {
+      "semente": 43,
+      "intensidade": 0.3,
+      "modelo": "selecao_robusta",
+      "consultas": {
+        "consultas_por_amostra": 17,
+        "probabilidade_media_antes": 0.9481916089923916,
+        "probabilidade_media_depois": 0.9481916089923916,
+        "amostras_com_probabilidade_reduzida": 59
+      },
+      "transferencia": {
+        "amostras_maliciosas": 2000,
+        "detectados_antes": 1966,
+        "detectados_depois": 1966,
+        "recall_antes": 0.983,
+        "recall": 0.983,
+        "queda_recall_pp": 0.0,
+        "evadiram": 0,
+        "denominador_evasao": 1966,
+        "taxa_evasao": 0.0,
+        "recuperados": 0,
+        "taxa_evasao_comum": 0.0,
+        "evadiram_comum": 0,
+        "denominador_comum": 1945
+      },
+      "adaptativo": {
+        "amostras_maliciosas": 2000,
+        "detectados_antes": 1966,
+        "detectados_depois": 1966,
+        "recall_antes": 0.983,
+        "recall": 0.983,
+        "queda_recall_pp": 0.0,
+        "evadiram": 0,
+        "denominador_evasao": 1966,
+        "taxa_evasao": 0.0,
+        "recuperados": 0,
+        "taxa_evasao_comum": 0.0,
+        "evadiram_comum": 0,
+        "denominador_comum": 1945
       }
     },
     {
@@ -3374,9 +3849,9 @@
         "denominador_evasao": 1972,
         "taxa_evasao": 0.006592292089249493,
         "recuperados": 0,
-        "taxa_evasao_comum": 0.004071246819338422,
-        "evadiram_comum": 8,
-        "denominador_comum": 1965
+        "taxa_evasao_comum": 0.003084832904884319,
+        "evadiram_comum": 6,
+        "denominador_comum": 1945
       },
       "adaptativo": {
         "amostras_maliciosas": 2000,
@@ -3389,9 +3864,9 @@
         "denominador_evasao": 1972,
         "taxa_evasao": 0.006592292089249493,
         "recuperados": 0,
-        "taxa_evasao_comum": 0.004071246819338422,
-        "evadiram_comum": 8,
-        "denominador_comum": 1965
+        "taxa_evasao_comum": 0.003084832904884319,
+        "evadiram_comum": 6,
+        "denominador_comum": 1945
       }
     },
     {
@@ -3402,7 +3877,7 @@
         "consultas_por_amostra": 17,
         "probabilidade_media_antes": 0.953440257756949,
         "probabilidade_media_depois": 0.9322100640845653,
-        "amostras_com_probabilidade_reduzida": 1039
+        "amostras_com_probabilidade_reduzida": 1040
       },
       "transferencia": {
         "amostras_maliciosas": 2000,
@@ -3415,9 +3890,9 @@
         "denominador_evasao": 1974,
         "taxa_evasao": 0.00303951367781155,
         "recuperados": 0,
-        "taxa_evasao_comum": 0.0010178117048346056,
+        "taxa_evasao_comum": 0.0010282776349614395,
         "evadiram_comum": 2,
-        "denominador_comum": 1965
+        "denominador_comum": 1945
       },
       "adaptativo": {
         "amostras_maliciosas": 2000,
@@ -3430,9 +3905,9 @@
         "denominador_evasao": 1974,
         "taxa_evasao": 0.004559270516717325,
         "recuperados": 0,
-        "taxa_evasao_comum": 0.002544529262086514,
+        "taxa_evasao_comum": 0.002570694087403599,
         "evadiram_comum": 5,
-        "denominador_comum": 1965
+        "denominador_comum": 1945
       }
     },
     {
@@ -3458,7 +3933,7 @@
         "recuperados": 4,
         "taxa_evasao_comum": 0.0,
         "evadiram_comum": 0,
-        "denominador_comum": 1965
+        "denominador_comum": 1945
       },
       "adaptativo": {
         "amostras_maliciosas": 2000,
@@ -3471,9 +3946,50 @@
         "denominador_evasao": 1977,
         "taxa_evasao": 0.0010116337885685382,
         "recuperados": 0,
-        "taxa_evasao_comum": 0.0005089058524173028,
+        "taxa_evasao_comum": 0.0005141388174807198,
         "evadiram_comum": 1,
-        "denominador_comum": 1965
+        "denominador_comum": 1945
+      }
+    },
+    {
+      "semente": 44,
+      "intensidade": 0.05,
+      "modelo": "selecao_robusta",
+      "consultas": {
+        "consultas_por_amostra": 17,
+        "probabilidade_media_antes": 0.9481916089923916,
+        "probabilidade_media_depois": 0.9481916089923916,
+        "amostras_com_probabilidade_reduzida": 25
+      },
+      "transferencia": {
+        "amostras_maliciosas": 2000,
+        "detectados_antes": 1966,
+        "detectados_depois": 1966,
+        "recall_antes": 0.983,
+        "recall": 0.983,
+        "queda_recall_pp": 0.0,
+        "evadiram": 0,
+        "denominador_evasao": 1966,
+        "taxa_evasao": 0.0,
+        "recuperados": 0,
+        "taxa_evasao_comum": 0.0,
+        "evadiram_comum": 0,
+        "denominador_comum": 1945
+      },
+      "adaptativo": {
+        "amostras_maliciosas": 2000,
+        "detectados_antes": 1966,
+        "detectados_depois": 1966,
+        "recall_antes": 0.983,
+        "recall": 0.983,
+        "queda_recall_pp": 0.0,
+        "evadiram": 0,
+        "denominador_evasao": 1966,
+        "taxa_evasao": 0.0,
+        "recuperados": 0,
+        "taxa_evasao_comum": 0.0,
+        "evadiram_comum": 0,
+        "denominador_comum": 1945
       }
     },
     {
@@ -3497,9 +4013,9 @@
         "denominador_evasao": 1972,
         "taxa_evasao": 0.007606490872210953,
         "recuperados": 0,
-        "taxa_evasao_comum": 0.0055979643765903305,
-        "evadiram_comum": 11,
-        "denominador_comum": 1965
+        "taxa_evasao_comum": 0.004113110539845758,
+        "evadiram_comum": 8,
+        "denominador_comum": 1945
       },
       "adaptativo": {
         "amostras_maliciosas": 2000,
@@ -3512,9 +4028,9 @@
         "denominador_evasao": 1972,
         "taxa_evasao": 0.007606490872210953,
         "recuperados": 0,
-        "taxa_evasao_comum": 0.0055979643765903305,
-        "evadiram_comum": 11,
-        "denominador_comum": 1965
+        "taxa_evasao_comum": 0.004113110539845758,
+        "evadiram_comum": 8,
+        "denominador_comum": 1945
       }
     },
     {
@@ -3538,9 +4054,9 @@
         "denominador_evasao": 1974,
         "taxa_evasao": 0.0060790273556231,
         "recuperados": 1,
-        "taxa_evasao_comum": 0.0035623409669211198,
-        "evadiram_comum": 7,
-        "denominador_comum": 1965
+        "taxa_evasao_comum": 0.003084832904884319,
+        "evadiram_comum": 6,
+        "denominador_comum": 1945
       },
       "adaptativo": {
         "amostras_maliciosas": 2000,
@@ -3553,9 +4069,9 @@
         "denominador_evasao": 1974,
         "taxa_evasao": 0.008105369807497468,
         "recuperados": 0,
-        "taxa_evasao_comum": 0.0055979643765903305,
-        "evadiram_comum": 11,
-        "denominador_comum": 1965
+        "taxa_evasao_comum": 0.005141388174807198,
+        "evadiram_comum": 10,
+        "denominador_comum": 1945
       }
     },
     {
@@ -3581,7 +4097,7 @@
         "recuperados": 4,
         "taxa_evasao_comum": 0.0,
         "evadiram_comum": 0,
-        "denominador_comum": 1965
+        "denominador_comum": 1945
       },
       "adaptativo": {
         "amostras_maliciosas": 2000,
@@ -3594,9 +4110,50 @@
         "denominador_evasao": 1977,
         "taxa_evasao": 0.0015174506828528073,
         "recuperados": 0,
-        "taxa_evasao_comum": 0.0010178117048346056,
+        "taxa_evasao_comum": 0.0010282776349614395,
         "evadiram_comum": 2,
-        "denominador_comum": 1965
+        "denominador_comum": 1945
+      }
+    },
+    {
+      "semente": 44,
+      "intensidade": 0.1,
+      "modelo": "selecao_robusta",
+      "consultas": {
+        "consultas_por_amostra": 17,
+        "probabilidade_media_antes": 0.9481916089923916,
+        "probabilidade_media_depois": 0.9481916089923916,
+        "amostras_com_probabilidade_reduzida": 44
+      },
+      "transferencia": {
+        "amostras_maliciosas": 2000,
+        "detectados_antes": 1966,
+        "detectados_depois": 1966,
+        "recall_antes": 0.983,
+        "recall": 0.983,
+        "queda_recall_pp": 0.0,
+        "evadiram": 0,
+        "denominador_evasao": 1966,
+        "taxa_evasao": 0.0,
+        "recuperados": 0,
+        "taxa_evasao_comum": 0.0,
+        "evadiram_comum": 0,
+        "denominador_comum": 1945
+      },
+      "adaptativo": {
+        "amostras_maliciosas": 2000,
+        "detectados_antes": 1966,
+        "detectados_depois": 1966,
+        "recall_antes": 0.983,
+        "recall": 0.983,
+        "queda_recall_pp": 0.0,
+        "evadiram": 0,
+        "denominador_evasao": 1966,
+        "taxa_evasao": 0.0,
+        "recuperados": 0,
+        "taxa_evasao_comum": 0.0,
+        "evadiram_comum": 0,
+        "denominador_comum": 1945
       }
     },
     {
@@ -3620,9 +4177,9 @@
         "denominador_evasao": 1972,
         "taxa_evasao": 0.010649087221095335,
         "recuperados": 0,
-        "taxa_evasao_comum": 0.008651399491094147,
-        "evadiram_comum": 17,
-        "denominador_comum": 1965
+        "taxa_evasao_comum": 0.006683804627249357,
+        "evadiram_comum": 13,
+        "denominador_comum": 1945
       },
       "adaptativo": {
         "amostras_maliciosas": 2000,
@@ -3635,9 +4192,9 @@
         "denominador_evasao": 1972,
         "taxa_evasao": 0.010649087221095335,
         "recuperados": 0,
-        "taxa_evasao_comum": 0.008651399491094147,
-        "evadiram_comum": 17,
-        "denominador_comum": 1965
+        "taxa_evasao_comum": 0.006683804627249357,
+        "evadiram_comum": 13,
+        "denominador_comum": 1945
       }
     },
     {
@@ -3648,7 +4205,7 @@
         "consultas_por_amostra": 17,
         "probabilidade_media_antes": 0.953440257756949,
         "probabilidade_media_depois": 0.9136907371517373,
-        "amostras_com_probabilidade_reduzida": 1518
+        "amostras_com_probabilidade_reduzida": 1517
       },
       "transferencia": {
         "amostras_maliciosas": 2000,
@@ -3661,9 +4218,9 @@
         "denominador_evasao": 1974,
         "taxa_evasao": 0.006585612968591692,
         "recuperados": 0,
-        "taxa_evasao_comum": 0.004580152671755725,
-        "evadiram_comum": 9,
-        "denominador_comum": 1965
+        "taxa_evasao_comum": 0.004113110539845758,
+        "evadiram_comum": 8,
+        "denominador_comum": 1945
       },
       "adaptativo": {
         "amostras_maliciosas": 2000,
@@ -3676,9 +4233,9 @@
         "denominador_evasao": 1974,
         "taxa_evasao": 0.011144883485309016,
         "recuperados": 0,
-        "taxa_evasao_comum": 0.008142493638676845,
-        "evadiram_comum": 16,
-        "denominador_comum": 1965
+        "taxa_evasao_comum": 0.0071979434447300775,
+        "evadiram_comum": 14,
+        "denominador_comum": 1945
       }
     },
     {
@@ -3702,9 +4259,9 @@
         "denominador_evasao": 1977,
         "taxa_evasao": 0.0020232675771370764,
         "recuperados": 4,
-        "taxa_evasao_comum": 0.0015267175572519084,
-        "evadiram_comum": 3,
-        "denominador_comum": 1965
+        "taxa_evasao_comum": 0.0010282776349614395,
+        "evadiram_comum": 2,
+        "denominador_comum": 1945
       },
       "adaptativo": {
         "amostras_maliciosas": 2000,
@@ -3717,9 +4274,50 @@
         "denominador_evasao": 1977,
         "taxa_evasao": 0.0030349013657056147,
         "recuperados": 0,
-        "taxa_evasao_comum": 0.002544529262086514,
-        "evadiram_comum": 5,
-        "denominador_comum": 1965
+        "taxa_evasao_comum": 0.002056555269922879,
+        "evadiram_comum": 4,
+        "denominador_comum": 1945
+      }
+    },
+    {
+      "semente": 44,
+      "intensidade": 0.2,
+      "modelo": "selecao_robusta",
+      "consultas": {
+        "consultas_por_amostra": 17,
+        "probabilidade_media_antes": 0.9481916089923916,
+        "probabilidade_media_depois": 0.9481916089923916,
+        "amostras_com_probabilidade_reduzida": 43
+      },
+      "transferencia": {
+        "amostras_maliciosas": 2000,
+        "detectados_antes": 1966,
+        "detectados_depois": 1966,
+        "recall_antes": 0.983,
+        "recall": 0.983,
+        "queda_recall_pp": 0.0,
+        "evadiram": 0,
+        "denominador_evasao": 1966,
+        "taxa_evasao": 0.0,
+        "recuperados": 0,
+        "taxa_evasao_comum": 0.0,
+        "evadiram_comum": 0,
+        "denominador_comum": 1945
+      },
+      "adaptativo": {
+        "amostras_maliciosas": 2000,
+        "detectados_antes": 1966,
+        "detectados_depois": 1966,
+        "recall_antes": 0.983,
+        "recall": 0.983,
+        "queda_recall_pp": 0.0,
+        "evadiram": 0,
+        "denominador_evasao": 1966,
+        "taxa_evasao": 0.0,
+        "recuperados": 0,
+        "taxa_evasao_comum": 0.0,
+        "evadiram_comum": 0,
+        "denominador_comum": 1945
       }
     },
     {
@@ -3743,9 +4341,9 @@
         "denominador_evasao": 1972,
         "taxa_evasao": 0.011663286004056795,
         "recuperados": 0,
-        "taxa_evasao_comum": 0.009669211195928753,
-        "evadiram_comum": 19,
-        "denominador_comum": 1965
+        "taxa_evasao_comum": 0.006683804627249357,
+        "evadiram_comum": 13,
+        "denominador_comum": 1945
       },
       "adaptativo": {
         "amostras_maliciosas": 2000,
@@ -3758,9 +4356,9 @@
         "denominador_evasao": 1972,
         "taxa_evasao": 0.011663286004056795,
         "recuperados": 0,
-        "taxa_evasao_comum": 0.009669211195928753,
-        "evadiram_comum": 19,
-        "denominador_comum": 1965
+        "taxa_evasao_comum": 0.006683804627249357,
+        "evadiram_comum": 13,
+        "denominador_comum": 1945
       }
     },
     {
@@ -3784,9 +4382,9 @@
         "denominador_evasao": 1974,
         "taxa_evasao": 0.009625126646403243,
         "recuperados": 1,
-        "taxa_evasao_comum": 0.007633587786259542,
-        "evadiram_comum": 15,
-        "denominador_comum": 1965
+        "taxa_evasao_comum": 0.005655526992287918,
+        "evadiram_comum": 11,
+        "denominador_comum": 1945
       },
       "adaptativo": {
         "amostras_maliciosas": 2000,
@@ -3799,9 +4397,9 @@
         "denominador_evasao": 1974,
         "taxa_evasao": 0.014690982776089158,
         "recuperados": 0,
-        "taxa_evasao_comum": 0.011704834605597965,
-        "evadiram_comum": 23,
-        "denominador_comum": 1965
+        "taxa_evasao_comum": 0.009768637532133676,
+        "evadiram_comum": 19,
+        "denominador_comum": 1945
       }
     },
     {
@@ -3825,9 +4423,9 @@
         "denominador_evasao": 1977,
         "taxa_evasao": 0.0020232675771370764,
         "recuperados": 4,
-        "taxa_evasao_comum": 0.0015267175572519084,
-        "evadiram_comum": 3,
-        "denominador_comum": 1965
+        "taxa_evasao_comum": 0.0005141388174807198,
+        "evadiram_comum": 1,
+        "denominador_comum": 1945
       },
       "adaptativo": {
         "amostras_maliciosas": 2000,
@@ -3840,9 +4438,50 @@
         "denominador_evasao": 1977,
         "taxa_evasao": 0.004046535154274153,
         "recuperados": 0,
-        "taxa_evasao_comum": 0.0035623409669211198,
-        "evadiram_comum": 7,
-        "denominador_comum": 1965
+        "taxa_evasao_comum": 0.0015424164524421595,
+        "evadiram_comum": 3,
+        "denominador_comum": 1945
+      }
+    },
+    {
+      "semente": 44,
+      "intensidade": 0.3,
+      "modelo": "selecao_robusta",
+      "consultas": {
+        "consultas_por_amostra": 17,
+        "probabilidade_media_antes": 0.9481916089923916,
+        "probabilidade_media_depois": 0.9481916089923916,
+        "amostras_com_probabilidade_reduzida": 61
+      },
+      "transferencia": {
+        "amostras_maliciosas": 2000,
+        "detectados_antes": 1966,
+        "detectados_depois": 1966,
+        "recall_antes": 0.983,
+        "recall": 0.983,
+        "queda_recall_pp": 0.0,
+        "evadiram": 0,
+        "denominador_evasao": 1966,
+        "taxa_evasao": 0.0,
+        "recuperados": 0,
+        "taxa_evasao_comum": 0.0,
+        "evadiram_comum": 0,
+        "denominador_comum": 1945
+      },
+      "adaptativo": {
+        "amostras_maliciosas": 2000,
+        "detectados_antes": 1966,
+        "detectados_depois": 1966,
+        "recall_antes": 0.983,
+        "recall": 0.983,
+        "queda_recall_pp": 0.0,
+        "evadiram": 0,
+        "denominador_evasao": 1966,
+        "taxa_evasao": 0.0,
+        "recuperados": 0,
+        "taxa_evasao_comum": 0.0,
+        "evadiram_comum": 0,
+        "denominador_comum": 1945
       }
     }
   ],
@@ -3871,10 +4510,10 @@
             "maximo": 0.006592292089249493
           },
           "taxa_evasao_comum": {
-            "media": 0.0039016115351993216,
-            "desvio_padrao": 0.0002938169308853056,
-            "minimo": 0.0035623409669211198,
-            "maximo": 0.004071246819338422
+            "media": 0.002570694087403599,
+            "desvio_padrao": 0.00051413881748072,
+            "minimo": 0.002056555269922879,
+            "maximo": 0.003084832904884319
           }
         },
         {
@@ -3899,10 +4538,10 @@
             "maximo": 0.008620689655172414
           },
           "taxa_evasao_comum": {
-            "media": 0.005767599660729432,
-            "desvio_padrao": 0.00029381693088530587,
-            "minimo": 0.0055979643765903305,
-            "maximo": 0.0061068702290076335
+            "media": 0.004113110539845758,
+            "desvio_padrao": 0.0005141388174807198,
+            "minimo": 0.0035989717223650387,
+            "maximo": 0.004627249357326478
           }
         },
         {
@@ -3927,10 +4566,10 @@
             "maximo": 0.012170385395537525
           },
           "taxa_evasao_comum": {
-            "media": 0.008651399491094149,
-            "desvio_padrao": 0.0015267175572519086,
-            "minimo": 0.0071246819338422395,
-            "maximo": 0.010178117048346057
+            "media": 0.00651242502142245,
+            "desvio_padrao": 0.0012938876495751073,
+            "minimo": 0.005141388174807198,
+            "maximo": 0.007712082262210797
           }
         },
         {
@@ -3955,10 +4594,10 @@
             "maximo": 0.011663286004056795
           },
           "taxa_evasao_comum": {
-            "media": 0.009329940627650551,
-            "desvio_padrao": 0.00029381693088530533,
-            "minimo": 0.00916030534351145,
-            "maximo": 0.009669211195928753
+            "media": 0.006341045415595544,
+            "desvio_padrao": 0.00029683818467332915,
+            "minimo": 0.006169665809768638,
+            "maximo": 0.006683804627249357
           }
         }
       ],
@@ -3985,10 +4624,10 @@
             "maximo": 0.006592292089249493
           },
           "taxa_evasao_comum": {
-            "media": 0.0039016115351993216,
-            "desvio_padrao": 0.0002938169308853056,
-            "minimo": 0.0035623409669211198,
-            "maximo": 0.004071246819338422
+            "media": 0.002570694087403599,
+            "desvio_padrao": 0.00051413881748072,
+            "minimo": 0.002056555269922879,
+            "maximo": 0.003084832904884319
           }
         },
         {
@@ -4013,10 +4652,10 @@
             "maximo": 0.008620689655172414
           },
           "taxa_evasao_comum": {
-            "media": 0.005767599660729432,
-            "desvio_padrao": 0.00029381693088530587,
-            "minimo": 0.0055979643765903305,
-            "maximo": 0.0061068702290076335
+            "media": 0.004113110539845758,
+            "desvio_padrao": 0.0005141388174807198,
+            "minimo": 0.0035989717223650387,
+            "maximo": 0.004627249357326478
           }
         },
         {
@@ -4041,10 +4680,10 @@
             "maximo": 0.012170385395537525
           },
           "taxa_evasao_comum": {
-            "media": 0.008651399491094149,
-            "desvio_padrao": 0.0015267175572519086,
-            "minimo": 0.0071246819338422395,
-            "maximo": 0.010178117048346057
+            "media": 0.00651242502142245,
+            "desvio_padrao": 0.0012938876495751073,
+            "minimo": 0.005141388174807198,
+            "maximo": 0.007712082262210797
           }
         },
         {
@@ -4069,10 +4708,10 @@
             "maximo": 0.011663286004056795
           },
           "taxa_evasao_comum": {
-            "media": 0.009329940627650551,
-            "desvio_padrao": 0.00029381693088530533,
-            "minimo": 0.00916030534351145,
-            "maximo": 0.009669211195928753
+            "media": 0.006341045415595544,
+            "desvio_padrao": 0.00029683818467332915,
+            "minimo": 0.006169665809768638,
+            "maximo": 0.006683804627249357
           }
         }
       ]
@@ -4101,10 +4740,10 @@
             "maximo": 0.00303951367781155
           },
           "taxa_evasao_comum": {
-            "media": 0.0010178117048346056,
+            "media": 0.0010282776349614395,
             "desvio_padrao": 0.0,
-            "minimo": 0.0010178117048346056,
-            "maximo": 0.0010178117048346056
+            "minimo": 0.0010282776349614395,
+            "maximo": 0.0010282776349614395
           }
         },
         {
@@ -4129,10 +4768,10 @@
             "maximo": 0.0060790273556231
           },
           "taxa_evasao_comum": {
-            "media": 0.002883799830364716,
-            "desvio_padrao": 0.0007773665301027719,
-            "minimo": 0.002035623409669211,
-            "maximo": 0.0035623409669211198
+            "media": 0.002570694087403599,
+            "desvio_padrao": 0.00051413881748072,
+            "minimo": 0.002056555269922879,
+            "maximo": 0.003084832904884319
           }
         },
         {
@@ -4157,10 +4796,10 @@
             "maximo": 0.006585612968591692
           },
           "taxa_evasao_comum": {
-            "media": 0.004071246819338423,
-            "desvio_padrao": 0.0005089058524173028,
-            "minimo": 0.0035623409669211198,
-            "maximo": 0.004580152671755725
+            "media": 0.0035989717223650387,
+            "desvio_padrao": 0.0005141388174807195,
+            "minimo": 0.003084832904884319,
+            "maximo": 0.004113110539845758
           }
         },
         {
@@ -4185,10 +4824,10 @@
             "maximo": 0.009625126646403243
           },
           "taxa_evasao_comum": {
-            "media": 0.007463952502120441,
-            "desvio_padrao": 0.00029381693088530533,
-            "minimo": 0.0071246819338422395,
-            "maximo": 0.007633587786259542
+            "media": 0.005484147386461011,
+            "desvio_padrao": 0.0002968381846733297,
+            "minimo": 0.005141388174807198,
+            "maximo": 0.005655526992287918
           }
         }
       ],
@@ -4215,10 +4854,10 @@
             "maximo": 0.004559270516717325
           },
           "taxa_evasao_comum": {
-            "media": 0.002374893977947413,
-            "desvio_padrao": 0.00029381693088530587,
-            "minimo": 0.002035623409669211,
-            "maximo": 0.002544529262086514
+            "media": 0.0023993144815766918,
+            "desvio_padrao": 0.0002968381846733294,
+            "minimo": 0.002056555269922879,
+            "maximo": 0.002570694087403599
           }
         },
         {
@@ -4243,10 +4882,10 @@
             "maximo": 0.008105369807497468
           },
           "taxa_evasao_comum": {
-            "media": 0.004919423240033927,
-            "desvio_padrao": 0.0005876338617706112,
-            "minimo": 0.004580152671755725,
-            "maximo": 0.0055979643765903305
+            "media": 0.004455869751499571,
+            "desvio_padrao": 0.0005936763693466588,
+            "minimo": 0.004113110539845758,
+            "maximo": 0.005141388174807198
           }
         },
         {
@@ -4271,10 +4910,10 @@
             "maximo": 0.011144883485309016
           },
           "taxa_evasao_comum": {
-            "media": 0.007803223070398643,
-            "desvio_padrao": 0.0005876338617706112,
-            "minimo": 0.0071246819338422395,
-            "maximo": 0.008142493638676845
+            "media": 0.006855184233076264,
+            "desvio_padrao": 0.0005936763693466588,
+            "minimo": 0.006169665809768638,
+            "maximo": 0.0071979434447300775
           }
         },
         {
@@ -4299,10 +4938,10 @@
             "maximo": 0.014690982776089158
           },
           "taxa_evasao_comum": {
-            "media": 0.011704834605597965,
-            "desvio_padrao": 0.000508905852417303,
-            "minimo": 0.011195928753180661,
-            "maximo": 0.012213740458015267
+            "media": 0.00959725792630677,
+            "desvio_padrao": 0.0007853600162734938,
+            "minimo": 0.008740359897172237,
+            "maximo": 0.010282776349614395
           }
         }
       ]
@@ -4387,10 +5026,10 @@
             "maximo": 0.0025290844714213456
           },
           "taxa_evasao_comum": {
-            "media": 0.001696352841391009,
-            "desvio_padrao": 0.00029381693088530576,
-            "minimo": 0.0015267175572519084,
-            "maximo": 0.002035623409669211
+            "media": 0.0011996572407883463,
+            "desvio_padrao": 0.00029683818467332953,
+            "minimo": 0.0010282776349614395,
+            "maximo": 0.0015424164524421595
           }
         },
         {
@@ -4415,10 +5054,10 @@
             "maximo": 0.0030349013657056147
           },
           "taxa_evasao_comum": {
-            "media": 0.0022052586938083123,
-            "desvio_padrao": 0.0005876338617706115,
-            "minimo": 0.0015267175572519084,
-            "maximo": 0.002544529262086514
+            "media": 0.0008568980291345329,
+            "desvio_padrao": 0.0002968381846733294,
+            "minimo": 0.0005141388174807198,
+            "maximo": 0.0010282776349614395
           }
         }
       ],
@@ -4445,10 +5084,10 @@
             "maximo": 0.0015174506828528073
           },
           "taxa_evasao_comum": {
-            "media": 0.0005089058524173028,
+            "media": 0.0005141388174807198,
             "desvio_padrao": 0.0,
-            "minimo": 0.0005089058524173028,
-            "maximo": 0.0005089058524173028
+            "minimo": 0.0005141388174807198,
+            "maximo": 0.0005141388174807198
           }
         },
         {
@@ -4473,10 +5112,10 @@
             "maximo": 0.0015174506828528073
           },
           "taxa_evasao_comum": {
-            "media": 0.0010178117048346056,
+            "media": 0.0010282776349614395,
             "desvio_padrao": 0.0,
-            "minimo": 0.0010178117048346056,
-            "maximo": 0.0010178117048346056
+            "minimo": 0.0010282776349614395,
+            "maximo": 0.0010282776349614395
           }
         },
         {
@@ -4501,10 +5140,10 @@
             "maximo": 0.0035407182599898838
           },
           "taxa_evasao_comum": {
-            "media": 0.002714164546225615,
-            "desvio_padrao": 0.0002938169308853056,
-            "minimo": 0.002544529262086514,
-            "maximo": 0.0030534351145038168
+            "media": 0.0022279348757497856,
+            "desvio_padrao": 0.0002968381846733294,
+            "minimo": 0.002056555269922879,
+            "maximo": 0.002570694087403599
           }
         },
         {
@@ -4529,10 +5168,240 @@
             "maximo": 0.004046535154274153
           },
           "taxa_evasao_comum": {
-            "media": 0.0032230703986429175,
-            "desvio_padrao": 0.00029381693088530587,
-            "minimo": 0.0030534351145038168,
-            "maximo": 0.0035623409669211198
+            "media": 0.0015424164524421595,
+            "desvio_padrao": 0.0,
+            "minimo": 0.0015424164524421595,
+            "maximo": 0.0015424164524421595
+          }
+        }
+      ]
+    },
+    "selecao_robusta": {
+      "transferencia": [
+        {
+          "intensidade": 0.05,
+          "repeticoes": 3,
+          "recall": {
+            "media": 0.983,
+            "desvio_padrao": 0.0,
+            "minimo": 0.983,
+            "maximo": 0.983
+          },
+          "queda_recall_pp": {
+            "media": 0.0,
+            "desvio_padrao": 0.0,
+            "minimo": 0.0,
+            "maximo": 0.0
+          },
+          "taxa_evasao": {
+            "media": 0.0,
+            "desvio_padrao": 0.0,
+            "minimo": 0.0,
+            "maximo": 0.0
+          },
+          "taxa_evasao_comum": {
+            "media": 0.0,
+            "desvio_padrao": 0.0,
+            "minimo": 0.0,
+            "maximo": 0.0
+          }
+        },
+        {
+          "intensidade": 0.1,
+          "repeticoes": 3,
+          "recall": {
+            "media": 0.983,
+            "desvio_padrao": 0.0,
+            "minimo": 0.983,
+            "maximo": 0.983
+          },
+          "queda_recall_pp": {
+            "media": 0.0,
+            "desvio_padrao": 0.0,
+            "minimo": 0.0,
+            "maximo": 0.0
+          },
+          "taxa_evasao": {
+            "media": 0.0,
+            "desvio_padrao": 0.0,
+            "minimo": 0.0,
+            "maximo": 0.0
+          },
+          "taxa_evasao_comum": {
+            "media": 0.0,
+            "desvio_padrao": 0.0,
+            "minimo": 0.0,
+            "maximo": 0.0
+          }
+        },
+        {
+          "intensidade": 0.2,
+          "repeticoes": 3,
+          "recall": {
+            "media": 0.983,
+            "desvio_padrao": 0.0,
+            "minimo": 0.983,
+            "maximo": 0.983
+          },
+          "queda_recall_pp": {
+            "media": 0.0,
+            "desvio_padrao": 0.0,
+            "minimo": 0.0,
+            "maximo": 0.0
+          },
+          "taxa_evasao": {
+            "media": 0.0,
+            "desvio_padrao": 0.0,
+            "minimo": 0.0,
+            "maximo": 0.0
+          },
+          "taxa_evasao_comum": {
+            "media": 0.0,
+            "desvio_padrao": 0.0,
+            "minimo": 0.0,
+            "maximo": 0.0
+          }
+        },
+        {
+          "intensidade": 0.3,
+          "repeticoes": 3,
+          "recall": {
+            "media": 0.983,
+            "desvio_padrao": 0.0,
+            "minimo": 0.983,
+            "maximo": 0.983
+          },
+          "queda_recall_pp": {
+            "media": 0.0,
+            "desvio_padrao": 0.0,
+            "minimo": 0.0,
+            "maximo": 0.0
+          },
+          "taxa_evasao": {
+            "media": 0.0,
+            "desvio_padrao": 0.0,
+            "minimo": 0.0,
+            "maximo": 0.0
+          },
+          "taxa_evasao_comum": {
+            "media": 0.0,
+            "desvio_padrao": 0.0,
+            "minimo": 0.0,
+            "maximo": 0.0
+          }
+        }
+      ],
+      "adaptativo": [
+        {
+          "intensidade": 0.05,
+          "repeticoes": 3,
+          "recall": {
+            "media": 0.983,
+            "desvio_padrao": 0.0,
+            "minimo": 0.983,
+            "maximo": 0.983
+          },
+          "queda_recall_pp": {
+            "media": 0.0,
+            "desvio_padrao": 0.0,
+            "minimo": 0.0,
+            "maximo": 0.0
+          },
+          "taxa_evasao": {
+            "media": 0.0,
+            "desvio_padrao": 0.0,
+            "minimo": 0.0,
+            "maximo": 0.0
+          },
+          "taxa_evasao_comum": {
+            "media": 0.0,
+            "desvio_padrao": 0.0,
+            "minimo": 0.0,
+            "maximo": 0.0
+          }
+        },
+        {
+          "intensidade": 0.1,
+          "repeticoes": 3,
+          "recall": {
+            "media": 0.983,
+            "desvio_padrao": 0.0,
+            "minimo": 0.983,
+            "maximo": 0.983
+          },
+          "queda_recall_pp": {
+            "media": 0.0,
+            "desvio_padrao": 0.0,
+            "minimo": 0.0,
+            "maximo": 0.0
+          },
+          "taxa_evasao": {
+            "media": 0.0,
+            "desvio_padrao": 0.0,
+            "minimo": 0.0,
+            "maximo": 0.0
+          },
+          "taxa_evasao_comum": {
+            "media": 0.0,
+            "desvio_padrao": 0.0,
+            "minimo": 0.0,
+            "maximo": 0.0
+          }
+        },
+        {
+          "intensidade": 0.2,
+          "repeticoes": 3,
+          "recall": {
+            "media": 0.983,
+            "desvio_padrao": 0.0,
+            "minimo": 0.983,
+            "maximo": 0.983
+          },
+          "queda_recall_pp": {
+            "media": 0.0,
+            "desvio_padrao": 0.0,
+            "minimo": 0.0,
+            "maximo": 0.0
+          },
+          "taxa_evasao": {
+            "media": 0.0,
+            "desvio_padrao": 0.0,
+            "minimo": 0.0,
+            "maximo": 0.0
+          },
+          "taxa_evasao_comum": {
+            "media": 0.0,
+            "desvio_padrao": 0.0,
+            "minimo": 0.0,
+            "maximo": 0.0
+          }
+        },
+        {
+          "intensidade": 0.3,
+          "repeticoes": 3,
+          "recall": {
+            "media": 0.983,
+            "desvio_padrao": 0.0,
+            "minimo": 0.983,
+            "maximo": 0.983
+          },
+          "queda_recall_pp": {
+            "media": 0.0,
+            "desvio_padrao": 0.0,
+            "minimo": 0.0,
+            "maximo": 0.0
+          },
+          "taxa_evasao": {
+            "media": 0.0,
+            "desvio_padrao": 0.0,
+            "minimo": 0.0,
+            "maximo": 0.0
+          },
+          "taxa_evasao_comum": {
+            "media": 0.0,
+            "desvio_padrao": 0.0,
+            "minimo": 0.0,
+            "maximo": 0.0
           }
         }
       ]

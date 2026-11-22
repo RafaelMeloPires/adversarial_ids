@@ -17,15 +17,18 @@ from sklearn.base import clone
 from avaliacao import medir_classificacao, medir_evasao, resumir_repeticoes
 from dados import COLUNAS_REMOVER, RESULTADOS_DIR, carregar_dados, proveniencia, salvar_json, separar, sha256
 from perturbacoes import AMOSTRAS, INTENSIDADES, SEMENTES, TENTATIVAS, busca_evasao
+from selecao_robusta import treinar as treinar_selecao_robusta
 
 SEMENTE_TREINO = 2026
 FRACAO_TREINO = .20
 INTENSIDADES_TREINO = [.10, .30]
-NOMES = ['original', 'controle_duplicacao', 'defesa']
+NOMES = ['original', 'controle_duplicacao', 'defesa', 'selecao_robusta']
+AUMENTADOS = ['controle_duplicacao', 'defesa']
 ARQUIVOS_MODELOS = {
     'original': 'modelo_random_forest.pkl',
     'controle_duplicacao': 'modelo_random_forest_controle.pkl',
     'defesa': 'modelo_random_forest_defesa.pkl',
+    'selecao_robusta': 'modelo_random_forest_selecao.pkl',
 }
 
 
@@ -53,12 +56,12 @@ def treinar_defesas(modelo, treino, tentativas, reutilizar):
     meta_path = RESULTADOS_DIR / 'treinamento_defesa.json'
     if reutilizar and meta_path.is_file():
         meta = json.loads(meta_path.read_text(encoding='utf-8'))
-        if meta['assinatura'] == assinatura and all((RESULTADOS_DIR / ARQUIVOS_MODELOS[n]).is_file() and sha256(RESULTADOS_DIR / ARQUIVOS_MODELOS[n]) == meta['modelos'][n]['sha256'] for n in NOMES[1:]):
+        if meta['assinatura'] == assinatura and all((RESULTADOS_DIR / ARQUIVOS_MODELOS[n]).is_file() and sha256(RESULTADOS_DIR / ARQUIVOS_MODELOS[n]) == meta['modelos'][n]['sha256'] for n in AUMENTADOS):
             print('Reutilizando modelos com hashes/configuração verificados', flush=True)
-            return {'original': modelo, **{n: joblib.load(RESULTADOS_DIR / ARQUIVOS_MODELOS[n]) for n in NOMES[1:]}}, meta
+            return {'original': modelo, **{n: joblib.load(RESULTADOS_DIR / ARQUIVOS_MODELOS[n]) for n in AUMENTADOS}}, meta
         raise ValueError('Modelos em cache incompatíveis; execute sem --reutilizar')
     modelos, registros = {'original': modelo}, {}
-    for nome in NOMES[1:]:
+    for nome in AUMENTADOS:
         copias, geracao = [], []
         for i, intensidade in enumerate(INTENSIDADES_TREINO):
             if nome == 'controle_duplicacao':
@@ -96,6 +99,8 @@ def executar(amostras=AMOSTRAS, tentativas=TENTATIVAS, reutilizar=False):
     caminho_original = RESULTADOS_DIR / ARQUIVOS_MODELOS['original']
     original = joblib.load(caminho_original)
     modelos, treinamento = treinar_defesas(original, treino, tentativas, reutilizar)
+    modelos['selecao_robusta'], meta_selecao = treinar_selecao_robusta(original, treino, reutilizar)
+    treinamento['modelos']['selecao_robusta'] = meta_selecao
     X_teste, y_teste = separar(teste)
     teste_limpo, por_categoria, teste_sem_coincidencias = {}, {}, {}
     # Diagnóstico adicional: coincidência das 42 entradas, sem consultar rótulos.

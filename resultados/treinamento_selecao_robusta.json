@@ -1,0 +1,66 @@
+{
+  "assinatura": {
+    "versao": 1,
+    "modelo_original_sha256": "553890d0c3ea901a2358198df2f8f2095f1a95da9538826f8f26b4bcc79a4db1",
+    "dataset_treino": {
+      "arquivo": "UNSW_NB15_training-set.csv",
+      "sha256": "bec7dd5ec88dc2a0ccc7a07879d338395ed7421750f675fd0339e07dfe0648fa"
+    },
+    "excluidas": [
+      "dur",
+      "sbytes",
+      "rate",
+      "sload",
+      "dload",
+      "smean",
+      "sinpkt",
+      "dinpkt",
+      "sjit",
+      "djit",
+      "tcprtt",
+      "synack",
+      "ackdat"
+    ],
+    "codigo_sha256": "613d981c80299ac7a940ee7e9b9fc1352ed52ab808a3e20e72f50876fec2b82c"
+  },
+  "arquivo": "modelo_random_forest_selecao.pkl",
+  "sha256": "a213d57c010b19e768a4393ba4fb937ada66d4e34324ddbe02dfd40fa53cc394",
+  "tempo_treinamento_segundos": 149.17425149999326,
+  "registros": 175341,
+  "classes": {
+    "1": 119341,
+    "0": 56000
+  },
+  "atributos_retidos": [
+    "proto",
+    "service",
+    "state",
+    "spkts",
+    "dpkts",
+    "dbytes",
+    "sttl",
+    "dttl",
+    "sloss",
+    "dloss",
+    "swin",
+    "stcpb",
+    "dtcpb",
+    "dwin",
+    "dmean",
+    "trans_depth",
+    "response_body_len",
+    "ct_srv_src",
+    "ct_state_ttl",
+    "ct_dst_ltm",
+    "ct_src_dport_ltm",
+    "ct_dst_sport_ltm",
+    "ct_dst_src_ltm",
+    "is_ftp_login",
+    "ct_ftp_cmd",
+    "ct_flw_http_mthd",
+    "ct_src_ltm",
+    "ct_srv_dst",
+    "is_sm_ips_ports"
+  ],
+  "garantia": "Invariância às alterações apenas nos atributos excluídos, sem garantia contra outros ataques."
+}

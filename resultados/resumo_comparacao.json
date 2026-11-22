@@ -7,7 +7,7 @@
     43,
     44
   ],
-  "denominador_comum": 1965,
+  "denominador_comum": 1945,
   "teste_limpo": [
     {
       "modelo": "original",
@@ -47,6 +47,19 @@
       "fp": 11453,
       "fn": 476,
       "tp": 44856
+    },
+    {
+      "modelo": "selecao_robusta",
+      "amostras": 82332,
+      "acuracia": 0.8617184083952777,
+      "precisao": 0.809978632868857,
+      "recall": 0.9783817171093268,
+      "f1_score": 0.8862512363996043,
+      "taxa_falsos_positivos": 0.28121621621621623,
+      "tn": 26595,
+      "fp": 10405,
+      "fn": 980,
+      "tp": 44352
     }
   ],
   "ataque_orcamento_maximo": {
@@ -72,10 +85,10 @@
         "maximo": 0.011663286004056795
       },
       "taxa_evasao_comum": {
-        "media": 0.009329940627650551,
-        "desvio_padrao": 0.00029381693088530533,
-        "minimo": 0.00916030534351145,
-        "maximo": 0.009669211195928753
+        "media": 0.006341045415595544,
+        "desvio_padrao": 0.00029683818467332915,
+        "minimo": 0.006169665809768638,
+        "maximo": 0.006683804627249357
       }
     },
     "controle_duplicacao": {
@@ -100,10 +113,10 @@
         "maximo": 0.014690982776089158
       },
       "taxa_evasao_comum": {
-        "media": 0.011704834605597965,
-        "desvio_padrao": 0.000508905852417303,
-        "minimo": 0.011195928753180661,
-        "maximo": 0.012213740458015267
+        "media": 0.00959725792630677,
+        "desvio_padrao": 0.0007853600162734938,
+        "minimo": 0.008740359897172237,
+        "maximo": 0.010282776349614395
       }
     },
     "defesa": {
@@ -128,10 +141,38 @@
         "maximo": 0.004046535154274153
       },
       "taxa_evasao_comum": {
-        "media": 0.0032230703986429175,
-        "desvio_padrao": 0.00029381693088530587,
-        "minimo": 0.0030534351145038168,
-        "maximo": 0.0035623409669211198
+        "media": 0.0015424164524421595,
+        "desvio_padrao": 0.0,
+        "minimo": 0.0015424164524421595,
+        "maximo": 0.0015424164524421595
+      }
+    },
+    "selecao_robusta": {
+      "intensidade": 0.3,
+      "repeticoes": 3,
+      "recall": {
+        "media": 0.983,
+        "desvio_padrao": 0.0,
+        "minimo": 0.983,
+        "maximo": 0.983
+      },
+      "queda_recall_pp": {
+        "media": 0.0,
+        "desvio_padrao": 0.0,
+        "minimo": 0.0,
+        "maximo": 0.0
+      },
+      "taxa_evasao": {
+        "media": 0.0,
+        "desvio_padrao": 0.0,
+        "minimo": 0.0,
+        "maximo": 0.0
+      },
+      "taxa_evasao_comum": {
+        "media": 0.0,
+        "desvio_padrao": 0.0,
+        "minimo": 0.0,
+        "maximo": 0.0
       }
     }
   },
