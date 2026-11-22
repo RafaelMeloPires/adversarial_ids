@@ -1,38 +1,29 @@
-from pathlib import Path
+"""Inspeciona os CSVs sem excluir silenciosamente registros."""
+
 import pandas as pd
 
-BASE_DIR = Path(__file__).resolve().parent.parent
-DATA_DIR = BASE_DIR / 'data'
+from dados import COLUNAS_REMOVER, RESULTADOS_DIR, carregar_dados, proveniencia, salvar_json
 
-arquivos = {
-    'treino': DATA_DIR / 'UNSW_NB15_training-set.csv',
-    'teste': DATA_DIR / 'UNSW_NB15_testing-set.csv',
-}
 
-faltantes = [str(caminho) for caminho in arquivos.values() if not caminho.exists()]
-if faltantes:
-    raise SystemExit('Arquivos do dataset não encontrados:\n- ' + '\n- '.join(faltantes) + '\nConsulte data/README.md para baixar os CSVs.')
+def main():
+    treino, teste = carregar_dados()
+    resumo = {"proveniencia": proveniencia(), "conjuntos": {}}
+    colunas = treino.drop(columns=["id"]).columns.tolist()
+    hashes_treino = pd.util.hash_pandas_object(treino[colunas], index=False)
+    hashes_teste = pd.util.hash_pandas_object(teste[colunas], index=False)
+    for nome, dados in [("treino", treino), ("teste", teste)]:
+        resumo["conjuntos"][nome] = {
+            "registros": len(dados), "caracteristicas": len(dados.columns) - len(COLUNAS_REMOVER),
+            "classes": {str(k): int(v) for k, v in dados.label.value_counts().items()},
+            "categorias_ataque": {str(k): int(v) for k, v in dados.attack_cat.value_counts().items()},
+            "duplicados_sem_id": int(dados.duplicated(subset=colunas).sum()),
+        }
+        print(nome, resumo["conjuntos"][nome], flush=True)
+    resumo["registros_teste_identicos_ao_treino_sem_id"] = int(hashes_teste.isin(hashes_treino).sum())
+    resumo["politica_duplicados"] = "Divisões oficiais preservadas; coincidências reportadas, sem remoção automática."
+    salvar_json(RESULTADOS_DIR / "validacao_dados.json", resumo)
+    print("Validação concluída; detalhes em resultados/validacao_dados.json")
 
-treino = pd.read_csv(arquivos['treino'])
-teste = pd.read_csv(arquivos['teste'])
 
-print('=== DATASET UNSW-NB15 ===')
-print(f'Registros de treinamento: {len(treino)}')
-print(f'Registros de teste: {len(teste)}')
-print('\nPrimeiros registros:')
-print(treino.head())
-
-for nome, dados in [('treinamento', treino), ('teste', teste)]:
-    print(f'\nDistribuição das classes no {nome}:')
-    print(dados['label'].value_counts())
-    print(f'Valores ausentes no {nome}: {dados.isnull().sum().sum()}')
-
-colunas_remover = ['id', 'attack_cat', 'label']
-X_treino = treino.drop(columns=colunas_remover)
-y_treino = treino['label']
-X_teste = teste.drop(columns=colunas_remover)
-y_teste = teste['label']
-
-print(f'\nQuantidade de características: {X_treino.shape[1]}')
-print(f'Formato de X_treino: {X_treino.shape}; X_teste: {X_teste.shape}')
-print('Preparação inicial concluída!')
+if __name__ == "__main__":
+    main()

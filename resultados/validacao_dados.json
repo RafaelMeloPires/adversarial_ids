@@ -1,0 +1,68 @@
+{
+  "proveniencia": {
+    "python": "3.14.3",
+    "dependencias": {
+      "numpy": "2.5.5",
+      "pandas": "3.1.1",
+      "scikit-learn": "1.9.1",
+      "matplotlib": "3.11.2",
+      "joblib": "1.6.0"
+    },
+    "datasets": {
+      "treino": {
+        "arquivo": "UNSW_NB15_training-set.csv",
+        "sha256": "bec7dd5ec88dc2a0ccc7a07879d338395ed7421750f675fd0339e07dfe0648fa"
+      },
+      "teste": {
+        "arquivo": "UNSW_NB15_testing-set.csv",
+        "sha256": "734fe6642edf758f7c94d7d9149426b49d202fe8e7bf0bef47392489c3c0a559"
+      }
+    }
+  },
+  "conjuntos": {
+    "treino": {
+      "registros": 175341,
+      "caracteristicas": 42,
+      "classes": {
+        "1": 119341,
+        "0": 56000
+      },
+      "categorias_ataque": {
+        "Normal": 56000,
+        "Generic": 40000,
+        "Exploits": 33393,
+        "Fuzzers": 18184,
+        "DoS": 12264,
+        "Reconnaissance": 10491,
+        "Analysis": 2000,
+        "Backdoor": 1746,
+        "Shellcode": 1133,
+        "Worms": 130
+      },
+      "duplicados_sem_id": 67601
+    },
+    "teste": {
+      "registros": 82332,
+      "caracteristicas": 42,
+      "classes": {
+        "1": 45332,
+        "0": 37000
+      },
+      "categorias_ataque": {
+        "Normal": 37000,
+        "Generic": 18871,
+        "Exploits": 11132,
+        "Fuzzers": 6062,
+        "DoS": 4089,
+        "Reconnaissance": 3496,
+        "Analysis": 677,
+        "Backdoor": 583,
+        "Shellcode": 378,
+        "Worms": 44
+      },
+      "duplicados_sem_id": 26387
+    }
+  },
+  "registros_teste_identicos_ao_treino_sem_id": 4247,
+  "politica_duplicados": "Divisões oficiais preservadas; coincidências reportadas, sem remoção automática."
+}

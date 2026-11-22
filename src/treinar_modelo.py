@@ -3,6 +3,8 @@ import time
 from pathlib import Path
 
 import joblib
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import pandas as pd
 from sklearn.compose import ColumnTransformer
@@ -18,6 +20,7 @@ from sklearn.metrics import (
 )
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
+from dados import carregar_dados, proveniencia
 
 # Caminhos do projeto
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -29,8 +32,7 @@ RESULTADOS_DIR.mkdir(exist_ok=True)
 # 1. Carregamento dos dados
 print("Carregando dataset...")
 
-treino = pd.read_csv(DATA_DIR / "UNSW_NB15_training-set.csv")
-teste = pd.read_csv(DATA_DIR / "UNSW_NB15_testing-set.csv")
+treino, teste = carregar_dados()
 
 # 2. Separação das características e rótulos
 colunas_remover = ["id", "attack_cat", "label"]
@@ -115,12 +117,15 @@ plt.close()
 
 # 10. Salvamento das métricas
 metricas = {
+    "proveniencia": proveniencia(),
+    "configuracao": {"n_estimators": 100, "random_state": 42, "divisao": "treino/teste oficiais"},
     "acuracia": float(acuracia),
     "precisao": float(precisao),
     "recall": float(recall),
     "f1_score": float(f1),
     "tempo_treinamento_segundos": float(tempo),
     "matriz_confusao": matriz.tolist(),
+    "taxa_falsos_positivos": float(matriz[0, 1] / matriz[0].sum()),
 }
 
 with open(RESULTADOS_DIR / "metricas.json", "w", encoding="utf-8") as arquivo:

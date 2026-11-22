@@ -4,6 +4,7 @@ __pycache__/
 .DS_Store
 .vscode/
 data/*.csv
+data/*.part
 
 # Não versionar modelos grandes ou serializados (joblib/pickle).
 resultados/*
