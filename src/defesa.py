@@ -1,288 +1,166 @@
-"""Etapa 4: treinamento adversarial e avaliação comparativa (UNSW-NB15).
+"""Etapa 4: treinamento adversarial, controle por duplicação e ataques adaptativos.
 
-Treina um segundo Random Forest com exemplos maliciosos perturbados,
-utilizando a MESMA família de perturbações da etapa 3. Compara o modelo
-original com o defendido em dados limpos e em ataques sintéticos idênticos.
-
-Os CSVs de teste não são usados no treinamento nem nos limites das alterações.
+Os hiperparâmetros abaixo são fixos. O teste não seleciona configurações.
+O controle e a defesa recebem os mesmos registros e rótulos adicionais;
+só a transformação dos registros difere.
 """
 
+import argparse
 import json
 import time
-from pathlib import Path
 
 import joblib
-import matplotlib
-matplotlib.use("Agg")  # Permite salvar gráficos sem janela gráfica.
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from sklearn.base import clone
-from sklearn.metrics import (
-    accuracy_score,
-    confusion_matrix,
-    f1_score,
-    precision_score,
-    recall_score,
-)
 
-BASE_DIR = Path(__file__).resolve().parent.parent
-DATA_DIR = BASE_DIR / "data"
-RESULTADOS_DIR = BASE_DIR / "resultados"
+from avaliacao import medir_classificacao, medir_evasao, resumir_repeticoes
+from dados import COLUNAS_REMOVER, RESULTADOS_DIR, carregar_dados, proveniencia, salvar_json, separar, sha256
+from perturbacoes import AMOSTRAS, INTENSIDADES, SEMENTES, TENTATIVAS, busca_evasao
 
-# Configurações fixas para permitir reprodução do experimento.
-SEMENTE_TESTE = 42                   # Igual à etapa 3.
-SEMENTE_TREINO = 2026               # Separada da semente do teste.
-AMOSTRAS_TESTE = 2000               # Igual à etapa 3.
-FRACAO_ATAQUES_TREINO = 0.20         # 20% dos ataques do treino são selecionados.
-INTENSIDADES_AUMENTO = [0.10, 0.30] # Duas novas cópias por ataque selecionado.
-INTENSIDADES_TESTE = [0.05, 0.10, 0.20, 0.30]  # Igual à etapa 3.
-CARACTERISTICAS = ["dur", "sbytes", "dbytes", "rate", "sload", "dload"]
-COLUNAS_REMOVER = ["id", "attack_cat", "label"]
+SEMENTE_TREINO = 2026
+FRACAO_TREINO = .20
+INTENSIDADES_TREINO = [.10, .30]
+NOMES = ['original', 'controle_duplicacao', 'defesa']
+ARQUIVOS_MODELOS = {
+    'original': 'modelo_random_forest.pkl',
+    'controle_duplicacao': 'modelo_random_forest_controle.pkl',
+    'defesa': 'modelo_random_forest_defesa.pkl',
+}
 
 
-def calcular_escalas(treino: pd.DataFrame) -> dict[str, float]:
-    """Calcula IQRs a partir do TREINO, assim como na etapa 3."""
-    return {
-        coluna: float(treino[coluna].quantile(0.75) - treino[coluna].quantile(0.25))
-        for coluna in CARACTERISTICAS
+def montar_aumentacao(X, y, selecionados, copias):
+    """Concatenação posicional evita desalinhamento de índices/rótulos."""
+    partes = [X] + list(copias)
+    for copia in copias:
+        if not copia.index.equals(selecionados.index) or not copia.columns.equals(X.columns):
+            raise ValueError('Cópias devem preservar índices/colunas da seleção')
+    novo_X = pd.concat(partes, ignore_index=True)
+    novo_y = pd.concat([y] + [pd.Series(np.ones(len(c), dtype=np.int64)) for c in copias], ignore_index=True)
+    return novo_X, novo_y
+
+
+def treinar_defesas(modelo, treino, tentativas, reutilizar):
+    X, y = separar(treino)
+    ataques = X.loc[y == 1]
+    selecionados = ataques.sample(n=max(1, round(len(ataques)*FRACAO_TREINO)), random_state=SEMENTE_TREINO)
+    assinatura = {
+        'versao_protocolo': 2, 'modelo_original_sha256': sha256(RESULTADOS_DIR / ARQUIVOS_MODELOS['original']),
+        'datasets': proveniencia()['datasets'], 'semente_treino': SEMENTE_TREINO,
+        'fracao_ataques_treino': FRACAO_TREINO, 'intensidades_aumento': INTENSIDADES_TREINO,
+        'tentativas': tentativas,
     }
+    meta_path = RESULTADOS_DIR / 'treinamento_defesa.json'
+    if reutilizar and meta_path.is_file():
+        meta = json.loads(meta_path.read_text(encoding='utf-8'))
+        if meta['assinatura'] == assinatura and all((RESULTADOS_DIR / ARQUIVOS_MODELOS[n]).is_file() and sha256(RESULTADOS_DIR / ARQUIVOS_MODELOS[n]) == meta['modelos'][n]['sha256'] for n in NOMES[1:]):
+            print('Reutilizando modelos com hashes/configuração verificados', flush=True)
+            return {'original': modelo, **{n: joblib.load(RESULTADOS_DIR / ARQUIVOS_MODELOS[n]) for n in NOMES[1:]}}, meta
+        raise ValueError('Modelos em cache incompatíveis; execute sem --reutilizar')
+    modelos, registros = {'original': modelo}, {}
+    for nome in NOMES[1:]:
+        copias, geracao = [], []
+        for i, intensidade in enumerate(INTENSIDADES_TREINO):
+            if nome == 'controle_duplicacao':
+                copia, info = selecionados.copy(), {'transformacao': 'identidade'}
+            else:
+                copia, info = busca_evasao(modelo, selecionados, intensidade, SEMENTE_TREINO+i, tentativas)
+            copias.append(copia)
+            geracao.append({'intensidade': intensidade, **info})
+        aumentado_X, aumentado_y = montar_aumentacao(X, y, selecionados, copias)
+        print(f'Treinando {nome}: {len(aumentado_X)} registros', flush=True)
+        estimador = clone(modelo)
+        inicio = time.perf_counter()
+        estimador.fit(aumentado_X, aumentado_y)
+        segundos = time.perf_counter()-inicio
+        caminho = RESULTADOS_DIR / ARQUIVOS_MODELOS[nome]
+        joblib.dump(estimador, caminho)
+        modelos[nome] = estimador
+        registros[nome] = {'arquivo': caminho.name, 'sha256': sha256(caminho), 'tempo_treinamento_segundos': segundos,
+            'registros': len(aumentado_X), 'classes': {str(k): int(v) for k,v in aumentado_y.value_counts().items()}, 'geracao': geracao}
+    meta = {'assinatura': assinatura, 'ataques_selecionados': len(selecionados), 'registros_originais': len(X), 'modelos': registros}
+    salvar_json(meta_path, meta)
+    return modelos, meta
 
 
-def modificar_registros(
-    dados: pd.DataFrame,
-    intensidade: float,
-    rng: np.random.Generator,
-    escalas: dict[str, float],
-) -> pd.DataFrame:
-    """Replica a modificação de atributos numéricos da etapa 3.
-
-    A perturbação é aleatória (não otimizada contra o classificador).
-    É um experimento no espaço de características, não tráfego executável.
-    """
-    modificados = dados.copy()
-
-    for coluna in CARACTERISTICAS:
-        escala = escalas[coluna]
-        if escala == 0:
-            continue
-
-        valores = modificados[coluna].to_numpy(dtype=float)
-        ruido = rng.uniform(-intensidade, intensidade, size=len(modificados)) * escala
-        novos_valores = valores + ruido
-        novos_valores = np.maximum(novos_valores, 0)
-        novos_valores = np.clip(
-            novos_valores,
-            valores - intensidade * escala,
-            valores + intensidade * escala,
-        )
-        modificados[coluna] = novos_valores
-
-    return modificados
+def medir_grupos(dados, pred):
+    grupos = {}
+    for categoria in sorted(dados.attack_cat.unique()):
+        mask = dados.attack_cat.eq(categoria).to_numpy()
+        grupos[categoria] = {'suporte': int(mask.sum()), 'taxa_prevista_ataque': float((pred[mask] == 1).mean())}
+    return grupos
 
 
-def medir_classificacao(y_verdadeiro: pd.Series, previsoes: np.ndarray) -> dict:
-    """Métricas binárias: 0 = normal, 1 = ataque."""
-    return {
-        "acuracia": float(accuracy_score(y_verdadeiro, previsoes)),
-        "precisao": float(precision_score(y_verdadeiro, previsoes, zero_division=0)),
-        "recall": float(recall_score(y_verdadeiro, previsoes, zero_division=0)),
-        "f1_score": float(f1_score(y_verdadeiro, previsoes, zero_division=0)),
-        "matriz_confusao": confusion_matrix(y_verdadeiro, previsoes, labels=[0, 1]).tolist(),
+def executar(amostras=AMOSTRAS, tentativas=TENTATIVAS, reutilizar=False):
+    treino, teste = carregar_dados()
+    caminho_original = RESULTADOS_DIR / ARQUIVOS_MODELOS['original']
+    original = joblib.load(caminho_original)
+    modelos, treinamento = treinar_defesas(original, treino, tentativas, reutilizar)
+    X_teste, y_teste = separar(teste)
+    teste_limpo, por_categoria, teste_sem_coincidencias = {}, {}, {}
+    # Diagnóstico adicional: coincidência das 42 entradas, sem consultar rótulos.
+    X_treino, _ = separar(treino)
+    hash_treino = pd.util.hash_pandas_object(X_treino, index=False)
+    novos = ~pd.util.hash_pandas_object(X_teste, index=False).isin(hash_treino).to_numpy()
+    for nome, modelo in modelos.items():
+        pred = modelo.predict(X_teste)
+        teste_limpo[nome] = medir_classificacao(y_teste, pred)
+        por_categoria[nome] = medir_grupos(teste, pred)
+        teste_sem_coincidencias[nome] = medir_classificacao(y_teste.to_numpy()[novos], pred[novos])
+        print(f'Limpo {nome}: F1={teste_limpo[nome]["f1_score"]:.4f}, FPR={teste_limpo[nome]["taxa_falsos_positivos"]:.4f}', flush=True)
+    ataques = teste.loc[teste.label == 1].sample(n=min(amostras, int(teste.label.sum())), random_state=42)
+    X_ataques, _ = separar(ataques)
+    pred_limpo = {n: m.predict(X_ataques) for n,m in modelos.items()}
+    comum = np.logical_and.reduce([p == 1 for p in pred_limpo.values()])
+    experimentos = []
+    for semente in SEMENTES:
+        for intensidade in INTENSIDADES:
+            transferido, info_origem = busca_evasao(original, X_ataques, intensidade, semente, tentativas)
+            for nome, modelo in modelos.items():
+                if nome == 'original':
+                    adaptativo, info = transferido, info_origem
+                else:
+                    adaptativo, info = busca_evasao(modelo, X_ataques, intensidade, semente, tentativas)
+                ponto = {'semente': semente, 'intensidade': intensidade, 'modelo': nome, 'consultas': info}
+                for tipo, entrada in [('transferencia', transferido), ('adaptativo', adaptativo)]:
+                    pred = modelo.predict(entrada)
+                    met = medir_evasao(pred_limpo[nome], pred)
+                    met_comum = medir_evasao(pred_limpo[nome], pred, comum)
+                    ponto[tipo] = {**met, 'taxa_evasao_comum': met_comum['taxa_evasao'], 'evadiram_comum': met_comum['evadiram'], 'denominador_comum': met_comum['denominador_evasao']}
+                experimentos.append(ponto)
+                print(f'{semente} {intensidade:.0%} {nome}: recall adaptativo {ponto["adaptativo"]["recall"]:.4f}', flush=True)
+    resumos = {}
+    for nome in NOMES:
+        resumos[nome] = {}
+        for tipo in ['transferencia', 'adaptativo']:
+            pontos = [dict(intensidade=e['intensidade'], **e[tipo]) for e in experimentos if e['modelo'] == nome]
+            resumos[nome][tipo] = resumir_repeticoes(pontos, ['recall', 'queda_recall_pp', 'taxa_evasao', 'taxa_evasao_comum'])
+    saida = {
+        'versao_protocolo': 2, 'proveniencia': proveniencia(), 'treinamento': treinamento,
+        'configuracao': {'amostras': len(X_ataques), 'semente_amostra': 42, 'sementes_busca': SEMENTES, 'tentativas': tentativas, 'intensidades': INTENSIDADES,
+            'ids_amostra': ataques.id.tolist(), 'denominador_comum': int(comum.sum()), 'modelo_original_sha256': sha256(caminho_original),
+            'politica_parametros': 'Fixos antes da execução; sem seleção pelo desempenho de teste. Ajustes futuros exigem validação separada do treino.'},
+        'teste_limpo_completo': teste_limpo, 'teste_limpo_por_categoria': por_categoria,
+        'teste_sem_entradas_identicas_ao_treino': {'excluidos': int((~novos).sum()), 'modelos': teste_sem_coincidencias},
+        'recall_amostra_limpa': {n: float((p == 1).mean()) for n,p in pred_limpo.items()},
+        'experimentos': experimentos, 'resumos': resumos,
+        'limitacoes': ['Mesmo modelo/mesma amostra em todas as sementes; desvio descreve apenas a aleatoriedade da busca.',
+            'Operações coerentes parcialmente no espaço de características; sem validação do tráfego/payload.',
+            'Transferência reutiliza entradas do ataque ao original; ataque adaptativo consulta cada modelo com orçamento igual.',
+            'Hiperparâmetros do modelo e limiar padrão preservados; FPR alto pode permanecer ou piorar.',
+            'Os resultados de teste do protocolo anterior já eram conhecidos na revisão; não há alegação de avaliação cega.'],
     }
+    salvar_json(RESULTADOS_DIR / 'resultados_defesa.json', saida)
+    print('Defesa e controle avaliados; execute python src/comparar_resultados.py', flush=True)
+    return saida
 
 
-def salvar_grafico(pontos: list[dict], destino: Path) -> None:
-    intensidades = [0] + [r["intensidade"] * 100 for r in pontos]
-    original = [pontos[0]["recall_amostra_original"] * 100] + [
-        r["recall_modelo_original"] * 100 for r in pontos
-    ]
-    defesa = [pontos[0]["recall_amostra_defesa"] * 100] + [
-        r["recall_modelo_defesa"] * 100 for r in pontos
-    ]
-
-    plt.figure(figsize=(9, 5.5))
-    plt.plot(intensidades, original, marker="o", label="Modelo original")
-    plt.plot(intensidades, defesa, marker="s", label="Modelo com defesa")
-    plt.xlabel("Intensidade de perturbação (%)")
-    plt.ylabel("Recall dos registros maliciosos (%)")
-    plt.title("Detecção de ataques: modelo original vs. defesa")
-    plt.xticks(intensidades)
-    plt.ylim(0, 100)
-    plt.grid(True, alpha=0.3)
-    plt.legend()
-    plt.tight_layout()
-    plt.savefig(destino, dpi=300)
-    plt.close()
-
-
-def main() -> None:
-    RESULTADOS_DIR.mkdir(parents=True, exist_ok=True)
-    caminho_modelo = RESULTADOS_DIR / "modelo_random_forest.pkl"
-    if not caminho_modelo.is_file():
-        raise SystemExit(
-            f"Modelo original não encontrado: {caminho_modelo}\n"
-            "Execute antes: python src/treinar_modelo.py\n"
-            "O modelo não foi incluído no ZIP porque a pasta resultados estava ignorada."
-        )
-
-    treino_csv = DATA_DIR / "UNSW_NB15_training-set.csv"
-    teste_csv = DATA_DIR / "UNSW_NB15_testing-set.csv"
-    for caminho in (treino_csv, teste_csv):
-        if not caminho.is_file():
-            raise SystemExit(f"Dataset ausente: {caminho}")
-
-    print("=== ETAPA 4: TREINAMENTO ADVERSARIAL ===", flush=True)
-    # joblib/pickle: carregue apenas modelos gerados por você ou fontes confiáveis.
-    modelo_original = joblib.load(caminho_modelo)
-    treino = pd.read_csv(treino_csv)
-    teste = pd.read_csv(teste_csv)
-    X_treino = treino.drop(columns=COLUNAS_REMOVER)
-    y_treino = treino["label"]
-    X_teste = teste.drop(columns=COLUNAS_REMOVER)
-    y_teste = teste["label"]
-
-    escalas = calcular_escalas(treino)
-
-    # Somente exemplos maliciosos do treinamento geram exemplos adicionais.
-    ataques_treino = X_treino.loc[y_treino == 1]
-    qtd_augmentacao = max(1, round(len(ataques_treino) * FRACAO_ATAQUES_TREINO))
-    amostra_treino = ataques_treino.sample(n=qtd_augmentacao, random_state=SEMENTE_TREINO)
-    rng_treino = np.random.default_rng(SEMENTE_TREINO)
-
-    partes_X = [X_treino]
-    partes_y = [y_treino]
-    for intensidade in INTENSIDADES_AUMENTO:
-        partes_X.append(modificar_registros(amostra_treino, intensidade, rng_treino, escalas))
-        partes_y.append(pd.Series(np.ones(qtd_augmentacao, dtype=np.int8)))
-
-    X_aumentado = pd.concat(partes_X, ignore_index=True)
-    y_aumentado = pd.concat(partes_y, ignore_index=True)
-    print(f"Treinamento limpo: {len(X_treino):,} registros")
-    print(f"Ataques do treino selecionados: {qtd_augmentacao:,}")
-    print(f"Treinamento aumentado: {len(X_aumentado):,} registros")
-    print(f"Intensidades de aumento: {INTENSIDADES_AUMENTO}")
-
-    # Clonagem preserva a arquitetura/hyperparâmetros do modelo da etapa 2,
-    # mas cria um novo estimador SEM reutilizar o ajuste anterior.
-    modelo_defendido = clone(modelo_original)
-    print("\nTreinando modelo com defesa...", flush=True)
-    inicio = time.perf_counter()
-    modelo_defendido.fit(X_aumentado, y_aumentado)
-    tempo = time.perf_counter() - inicio
-    print(f"Treinamento concluído em {tempo:.1f} s.", flush=True)
-
-    # Medição limpa: MESMO conjunto completo de teste para ambos os modelos.
-    print("\nAvaliando os dois modelos no conjunto de teste limpo...", flush=True)
-    metricas_limpo_original = medir_classificacao(y_teste, modelo_original.predict(X_teste))
-    metricas_limpo_defesa = medir_classificacao(y_teste, modelo_defendido.predict(X_teste))
-
-    # Mesmos 2 mil ataques da etapa 3; mesma ordem de ruídos (semente 42).
-    amostra_ataques = teste.loc[teste["label"] == 1].sample(
-        n=min(AMOSTRAS_TESTE, int((teste["label"] == 1).sum())),
-        random_state=SEMENTE_TESTE,
-    )
-    X_ataques = amostra_ataques.drop(columns=COLUNAS_REMOVER)
-    pred_original_limpo = modelo_original.predict(X_ataques)
-    pred_defesa_limpo = modelo_defendido.predict(X_ataques)
-    detectados_inicial_original = pred_original_limpo == 1
-    detectados_inicial_defesa = pred_defesa_limpo == 1
-    recall_amostra_original = float(np.mean(detectados_inicial_original))
-    recall_amostra_defesa = float(np.mean(detectados_inicial_defesa))
-
-    rng_teste = np.random.default_rng(SEMENTE_TESTE)
-    pontos = []
-    print("\nComparação sob perturbações iguais:", flush=True)
-    for intensidade in INTENSIDADES_TESTE:
-        X_modificado = modificar_registros(X_ataques, intensidade, rng_teste, escalas)
-        pred_original = modelo_original.predict(X_modificado)
-        pred_defesa = modelo_defendido.predict(X_modificado)
-
-        # Ambos os recalls usam EXATAMENTE os mesmos ataques verdadeiros.
-        recall_original = float(np.mean(pred_original == 1))
-        recall_defesa = float(np.mean(pred_defesa == 1))
-        # Taxa de evasão restrita às detecções iniciais DE CADA modelo.
-        evasao_original = (
-            float(np.mean(pred_original[detectados_inicial_original] == 0))
-            if detectados_inicial_original.any() else 0.0
-        )
-        evasao_defesa = (
-            float(np.mean(pred_defesa[detectados_inicial_defesa] == 0))
-            if detectados_inicial_defesa.any() else 0.0
-        )
-
-        pontos.append({
-            "intensidade": intensidade,
-            "recall_amostra_original": recall_amostra_original,
-            "recall_amostra_defesa": recall_amostra_defesa,
-            "recall_modelo_original": recall_original,
-            "recall_modelo_defesa": recall_defesa,
-            "delta_recall_pontos_percentuais": float((recall_defesa - recall_original) * 100),
-            "taxa_evasao_modelo_original": evasao_original,
-            "taxa_evasao_modelo_defesa": evasao_defesa,
-        })
-        print(
-            f"  {intensidade:>4.0%} | recall original: {recall_original:.4f}"
-            f" | recall defesa: {recall_defesa:.4f}"
-            f" | diferença: {(recall_defesa-recall_original)*100:+.2f} pp",
-            flush=True,
-        )
-
-    print("\nConjunto de teste limpo:")
-    for nome, met in [("Original", metricas_limpo_original), ("Defesa", metricas_limpo_defesa)]:
-        print(
-            f"  {nome}: acurácia={met['acuracia']:.4f}"
-            f" precisão={met['precisao']:.4f} recall={met['recall']:.4f}"
-            f" F1={met['f1_score']:.4f}"
-        )
-
-    dados_resultados = {
-        "descricao": "Comparação empírica da robustez a ruídos sintéticos no espaço de características",
-        "configuracao": {
-            "semente_teste": SEMENTE_TESTE,
-            "semente_treino": SEMENTE_TREINO,
-            "amostras_teste_maliciosas": len(X_ataques),
-            "registros_treino_originais": len(X_treino),
-            "ataques_treino_selecionados": qtd_augmentacao,
-            "registros_treino_aumentados": len(X_aumentado),
-            "fracao_ataques_treino": FRACAO_ATAQUES_TREINO,
-            "intensidades_aumento": INTENSIDADES_AUMENTO,
-            "intensidades_teste": INTENSIDADES_TESTE,
-            "caracteristicas_manipuladas": CARACTERISTICAS,
-            "tempo_treinamento_segundos": float(tempo),
-        },
-        "teste_limpo_completo": {
-            "modelo_original": metricas_limpo_original,
-            "modelo_defesa": metricas_limpo_defesa,
-        },
-        "teste_ataques_manipulados": {
-            "recall_inicial_modelo_original": recall_amostra_original,
-            "recall_inicial_modelo_defesa": recall_amostra_defesa,
-            "detectados_inicialmente_modelo_original": int(detectados_inicial_original.sum()),
-            "detectados_inicialmente_modelo_defesa": int(detectados_inicial_defesa.sum()),
-            "experimentos": pontos,
-        },
-        "limitacoes": [
-            "Perturbações aleatórias em seis atributos; não há otimização contra a predição.",
-            "Não se garante consistência entre atributos correlacionados nem viabilidade como pacotes reais.",
-            "A taxa de evasão usa apenas os ataques inicialmente detectados por cada modelo; os denominadores podem diferir.",
-        ],
-    }
-
-    caminho_json = RESULTADOS_DIR / "resultados_defesa.json"
-    with caminho_json.open("w", encoding="utf-8") as arq:
-        json.dump(dados_resultados, arq, indent=4, ensure_ascii=False)
-
-    caminho_grafico = RESULTADOS_DIR / "comparacao_defesa.png"
-    salvar_grafico(pontos, caminho_grafico)
-    caminho_defesa = RESULTADOS_DIR / "modelo_random_forest_defesa.pkl"
-    joblib.dump(modelo_defendido, caminho_defesa)
-
-    print("\nArquivos gerados:")
-    for p in (caminho_json, caminho_grafico, caminho_defesa):
-        print(" -", p.relative_to(BASE_DIR))
-    print("Etapa 4 concluída.")
-
-
-if __name__ == "__main__":
-    main()
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--amostras', type=int, default=AMOSTRAS)
+    parser.add_argument('--tentativas', type=int, default=TENTATIVAS)
+    parser.add_argument('--reutilizar', action='store_true', help='Reutiliza apenas modelos com configuração e hashes conferidos')
+    args = parser.parse_args()
+    if args.amostras < 1 or args.tentativas < 1:
+        parser.error('Amostras e tentativas devem ser positivas')
+    executar(args.amostras, args.tentativas, args.reutilizar)

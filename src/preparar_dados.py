@@ -20,6 +20,10 @@ def main():
         }
         print(nome, resumo["conjuntos"][nome], flush=True)
     resumo["registros_teste_identicos_ao_treino_sem_id"] = int(hashes_teste.isin(hashes_treino).sum())
+    entradas = treino.drop(columns=COLUNAS_REMOVER).columns.tolist()
+    hashes_X_treino = pd.util.hash_pandas_object(treino[entradas], index=False)
+    hashes_X_teste = pd.util.hash_pandas_object(teste[entradas], index=False)
+    resumo["registros_teste_com_42_entradas_identicas_ao_treino"] = int(hashes_X_teste.isin(hashes_X_treino).sum())
     resumo["politica_duplicados"] = "Divisões oficiais preservadas; coincidências reportadas, sem remoção automática."
     salvar_json(RESULTADOS_DIR / "validacao_dados.json", resumo)
     print("Validação concluída; detalhes em resultados/validacao_dados.json")

@@ -1,95 +1,155 @@
 # Aprendizado de Máquina Adversarial contra Detecção de Intrusão
 
-Experimento com o **UNSW-NB15** para o tema 3 da disciplina Segurança em Sistemas Computacionais (UFJF). O projeto compara o desempenho de um Random Forest antes, durante e após o treinamento com dados sinteticamente perturbados.
+Experimento do tema 3 de Segurança em Sistemas Computacionais (UFJF), com
+UNSW-NB15 e Random Forest. Mede evasão no espaço de características e o custo
+das defesas em detecção e alarmes falsos. Não gera ataques contra redes reais.
 
-## Requisitos
+## Reprodução no Windows
 
-- Python 3.11 ou 3.12
-- Dependências listadas em `requirements.txt`
-- Dataset UNSW-NB15, divisão *Training and Testing Sets* da [UNSW](https://research.unsw.edu.au/projects/unsw-nb15-dataset)
-
-## Configuração no Windows (PowerShell)
+Ambiente verificado: Python 3.14.3. `requirements.txt` lista as dependências;
+`requirements-lock.txt` fixa todas as versões utilizadas nesta execução.
 
 ```powershell
-py -m venv .venv
+python -m venv .venv
 .\.venv\Scripts\Activate.ps1
-python -m pip install -r requirements.txt
+python -m pip install -r requirements-lock.txt
+$env:MPLCONFIGDIR = "$PWD/resultados/.matplotlib"
+python src/baixar_dados.py
+python src/preparar_dados.py
+python src/treinar_modelo.py
+python src/ataque_adversarial.py
+python src/defesa.py
+python src/comparar_resultados.py
+python -m unittest discover -s tests -v
 ```
 
-Adicione os arquivos abaixo na pasta `data/` (não versionados):
+Os scripts usam caminhos relativos à localização do projeto. Os CSVs e modelos
+ficam fora do Git; resultados JSON, CSV e PNG são versionados. Carregue modelos
+joblib apenas se tiverem sido gerados por você ou vierem de fonte confiável.
+O treinamento do modelo original levou aproximadamente 123 s nesta máquina;
+a duração depende do hardware. A defesa inclui outros dois treinamentos e buscas.
 
-- `UNSW_NB15_training-set.csv`
-- `UNSW_NB15_testing-set.csv`
+`python src/defesa.py --reutilizar` reutiliza os dois modelos adicionais somente
+quando configuração e hashes dos modelos e datasets conferem. `--amostras` e
+`--tentativas` permitem execuções menores de ataque e defesa; para comparar,
+ambos devem usar os mesmos valores. O padrão é 2.000 registros e 16 candidatos.
 
-## Executar na ordem
+## Dados e verificação da implementação anterior
 
-```powershell
-python src/preparar_dados.py       # Etapa 1: inspecionar dataset
-python src/treinar_modelo.py      # Etapa 2: treinar modelo original
-python src/ataque_adversarial.py  # Etapa 3: avaliar a evasão
-python src/defesa.py              # Etapa 4: treinamento adversarial
-```
+A [UNSW](https://research.unsw.edu.au/projects/unsw-nb15-dataset) fornece as divisões
+com 175.341 registros de treino e 82.332 de teste. O download automático usa um
+espelho público fixado por commit e SHA-256, registrado em `data/origem.json`.
+Os hashes identificam a cópia usada; não são assinatura de autenticidade da UNSW.
+O script recusa sobrescrever CSVs existentes com hashes diferentes.
 
-Se o arquivo `resultados/modelo_random_forest.pkl` já existir, **não é necessário repetir** o treinamento da etapa 2. O script da etapa 4 usa o modelo existente para clonar a arquitetura e comparar os resultados. Carregue modelos `joblib` apenas de fontes confiáveis.
+`preparar_dados.py` valida as 45 colunas, categorias, rótulos binários, domínios
+inteiros, ausentes, valores negativos e não finitos. As 42 entradas excluem `id`,
+`attack_cat` e `label`. Duplicações são reportadas, sem modificar a divisão oficial:
+67.601 registros repetidos no treino, 26.387 no teste, desconsiderando `id`;
+4.247 registros de teste coincidem com registros completos de treino sem `id`.
+Considerando apenas as 42 entradas, há 8.541 coincidências de teste com treino.
+A defesa também reporta métricas nos 73.791 registros sem essas coincidências.
+Essa verificação não elimina todas as dependências entre os fluxos do dataset.
 
-## Como funciona a defesa (Etapa 4)
+Os scripts anteriores das etapas 2, 3 e 4 foram executados antes da revisão.
+As matrizes de confusão e métricas publicadas foram reproduzidas. O registro
+completo está em `resultados/reproducao_inicial.json`. Os protocolos têm operações
+e orçamentos diferentes; não se deve atribuir suas diferenças só à otimização.
 
-1. Carrega o modelo da etapa 2 e os conjuntos oficiais de treino/teste.
-2. Calcula os intervalos interquartis (IQR) de seis variáveis **apenas com os dados de treino**: `dur`, `sbytes`, `dbytes`, `rate`, `sload`, `dload`.
-3. Seleciona, com semente fixa, 20% dos registros maliciosos do **treinamento** e cria duas versões perturbadas (intensidades 10% e 30%) com a mesma regra do script `ataque_adversarial.py`. Inclui os registros originais e as cópias manipuladas na base ampliada, rotuladas como ataque.
-4. Cria um novo Random Forest com a mesma configuração do original (`sklearn.base.clone`) e treina do zero na base ampliada. Não altera nem substitui o modelo anterior.
-5. Avalia os dois classificadores no **mesmo conjunto de teste limpo** (acurácia, precisão, recall, F1 e matriz de confusão).
-6. Avalia ambos nos mesmos 2.000 ataques de teste perturbados, usando sementes e intensidades iguais às da Etapa 3 (5%, 10%, 20% e 30%). Salva um gráfico comparativo do recall.
+## Protocolo atual
 
-A **comparação principal** é o recall no mesmo conjunto de ataques perturbados: quanto maior, menos ataques passaram despercebidos. A taxa de evasão também é fornecida, mas considera apenas os ataques originalmente detectados por cada modelo; seus denominadores podem ser diferentes.
+**Modelo original.** Pipeline com OneHotEncoder ajustado no treino e Random
+Forest com 100 árvores, `random_state=42`, `n_jobs=-1`. Mantém o limiar padrão
+e as divisões oficiais, sem usar o teste para ajustar o pré-processamento.
 
-## Arquivos de saída
+**Ataque.** Há três condições em `resultados_ataque.json`:
+
+- Ruído histórico: perturbação independente de seis atributos em 5–30% do IQR
+  do treinamento; pode criar registros inconsistentes e serve de referência.
+- Aleatório restrito: um candidato com as mesmas operações e limites da busca.
+- Busca restrita: 16 candidatos por registro, mais a consulta ao original.
+  Minimiza a probabilidade prevista de ataque e mantém o original se nenhum
+  candidato reduzir essa probabilidade. Não aumenta o recall por recuperação
+  de ataques originalmente ignorados.
+
+O atacante conhece as probabilidades do modelo. Pode acrescentar atraso e
+padding nos pacotes de origem; orçamento de 5%, 10%, 20% ou 30% dos valores
+originais, em cada operação. Os bytes são inteiros e aditivos, limitados à média
+de 1.500 bytes por pacote. Registros que já excedem esse teto não ganham bytes.
+Fluxos com duração zero são preservados. TTLs, protocolo, serviço, estado,
+contagens de pacotes, bytes de destino e demais atributos são imutáveis.
+Taxas, média de bytes de origem e atributos temporais relacionados são atualizados.
+As razões são escaladas preservando os resíduos de arredondamento originais.
+Isso é uma hipótese de manipulação com consistência parcial, sem prova de
+preservação do payload ou viabilidade de reprodução em pacotes reais.
+
+**Defesa e controle.** Seleciona 20% dos ataques de treinamento, semente 2026:
+23.868 registros. A defesa gera duas cópias por registro com a busca direcionada,
+intensidades 10% e 30%, usando somente o modelo original e o treino. O controle
+recebe cópias idênticas, sem alteração. Ambos são clones do modelo original e
+recebem 223.077 registros, com a mesma distribuição de rótulos. Assim é possível
+separar o efeito das alterações do efeito de adicionar exemplos maliciosos.
+
+**Avaliação.** Teste limpo completo para acurácia, precisão, recall, F1, matriz de
+confusão e taxa de falsos positivos. Nos ataques, a mesma amostra maliciosa de
+2.000 registros, semente 42, é avaliada com sementes de busca 42, 43 e 44:
+
+- Transferência: os três modelos recebem exatamente os registros gerados contra
+  o original, para medir generalização da defesa a um ataque fixo.
+- Adaptativo: cada modelo é atacado diretamente, com as mesmas operações e o
+  mesmo orçamento de consultas. As entradas resultantes podem ser diferentes.
+
+A evasão própria usa detecções iniciais de cada modelo. A evasão comum usa a
+interseção das detecções iniciais dos três, garantindo denominadores iguais.
+Os JSONs e CSVs incluem contagens de evasões e recuperações, além das taxas.
+Médias e desvios padrão referem-se às três sementes na mesma amostra e modelo;
+não são intervalos de confiança nem medem variabilidade de treinamento.
+
+Os parâmetros foram fixados antes da execução deste protocolo, sem seleção pelo
+teste. Os resultados anteriores já eram conhecidos na revisão; não se alega
+avaliação cega. Se parâmetros forem ajustados futuramente, é preciso separar
+validação do treinamento e impedir que registros idênticos cruzem essa divisão.
+
+## Resultados observados
+
+| Modelo | Acurácia limpa | Recall limpo | F1 limpo | Falsos positivos | Recall sob ataque adaptativo a 30% |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Original | 87,10% | 98,55% | 89,37% | 26,93% | 97,47% |
+| Controle por duplicação | 86,55% | 98,59% | 88,98% | 28,21% | 97,28% |
+| Treinamento adversarial | 85,51% | 98,95% | 88,26% | 30,95% | 98,48% |
+
+O recall limpo da amostra de ataques do modelo original é 98,60%, diferente do
+recall no teste completo. A busca a 30% causa queda média de 1,13 ponto percentual
+nessa amostra. O treinamento adversarial reduz a evasão, mas aumenta os alarmes
+falsos e reduz F1. O controle por duplicação não explica sozinho o benefício sob
+ataque. Não há melhora geral de todas as métricas, nem evidência de proteção
+contra qualquer família de ataque ou tráfego de uma rede real.
+
+## Arquivos de saída e etapa 5
 
 | Arquivo em `resultados/` | Conteúdo |
 | --- | --- |
-| `modelo_random_forest.pkl` | Modelo original (etapa 2) |
-| `metricas.json`, `matriz_confusao.png` | Métricas e gráfico originais |
-| `resultados_ataque.json`, `grafico_ataque.png` | Análise da evasão (etapa 3) |
-| `modelo_random_forest_defesa.pkl` | Novo modelo com treinamento adversarial (etapa 4) |
-| `resultados_defesa.json` | Resultados e parâmetros da comparação (etapa 4) |
-| `comparacao_defesa.png` | Comparação do recall sob perturbação (etapa 4) |
+| `validacao_dados.json` | Integridade, distribuição, duplicações e proveniência |
+| `reproducao_inicial.json` | Reprodução do experimento anterior |
+| `modelo_random_forest.pkl`, `metricas.json`, `matriz_confusao.png` | Modelo e avaliação originais |
+| `resultados_ataque.json`, `grafico_ataque.png` | Ruído, referência restrita e busca direcionada |
+| `modelo_random_forest_controle.pkl`, `modelo_random_forest_defesa.pkl` | Controle e defesa |
+| `treinamento_defesa.json` | Configuração, hashes e composição dos treinamentos |
+| `resultados_defesa.json` | Teste limpo, por categoria, sem coincidências, transferência e adaptação |
+| `comparacao_metricas.csv`, `comparacao_ataques.csv` | Tabelas para análise e relatório |
+| `comparacao_defesa.png` | Recall sob ataques transferidos e adaptativos |
+| `metricas_limpo.png` | Métricas limpas e custo em alarmes falsos |
+| `evasao_denominador_comum.png` | Evasão com denominador comum |
+| `resumo_comparacao.json` | Síntese numérica para a etapa 5 |
 
-Os arquivos JSON e PNG podem ser versionados; os `.pkl` e os arquivos CSV ficam ignorados no `.gitignore`.
+O comparador recusa misturar modelos, datasets, amostras ou orçamentos diferentes.
+Nos gráficos, as barras de erro mostram o desvio das sementes; o eixo de recall
+é ampliado e identificado. A análise deve apresentar a queda causada pelo ataque,
+a recuperação com defesa e o custo em falsos positivos. O relatório no modelo
+do professor e os slides de até 15 minutos continuam pendentes.
 
-## Limitações importantes
+## Referência do dataset
 
-### Revisão do ataque (protocolo 2)
-
-O ataque agora mantém o ruído IQR histórico e inclui uma referência aleatória
-restrita e uma busca direcionada à classe normal, com 16 candidatos e retenção
-do original. Executa três sementes (42, 43 e 44) sobre os mesmos 2.000 registros.
-O orçamento de 5–30% da busca é relativo à duração e aos bytes originais;
-o orçamento do ruído histórico continua relativo ao IQR e não é equivalente.
-A busca permite apenas atraso e padding na origem, preserva bytes inteiros,
-atualiza taxas e atributos temporais relacionados e congela fluxos de duração
-zero. TTLs, categorias, contagens de pacotes e bytes de destino são imutáveis.
-Isso impõe consistência parcial; ainda não demonstra viabilidade em pacotes.
-
-Os resultados anteriores foram reproduzidos e preservados em
-`resultados/reproducao_inicial.json`. Testes: `python -m unittest discover -s tests -v`.
-
-- O ruído histórico é uma referência aleatória; a busca restrita otimiza a probabilidade prevista, sem demonstrar exploração de uma rede real.
-- A perturbação pode produzir combinações fisicamente inconsistentes entre duração, bytes e taxas; não prova a viabilidade de gerar tais fluxos de rede.
-- Treinamento com exemplos perturbados pode melhorar, não alterar ou **piorar** o recall e as falsas detecções; os resultados devem ser reportados como observados, não pressupostos.
-- O conjunto de teste nunca é usado para escolher parâmetros da defesa. Os parâmetros fixos da etapa 4 devem ser tratados como pré-definidos, evitando ajustar o modelo repetidamente pelo desempenho do teste.
-
-## Organização
-
-```text
-adversarial_ids/
-├── data/                           # CSVs do dataset (baixados separadamente)
-├── src/
-│   ├── preparar_dados.py
-│   ├── treinar_modelo.py
-│   ├── ataque_adversarial.py
-│   └── defesa.py
-├── resultados/                     # Modelos, métricas e gráficos
-├── requirements.txt
-├── .gitignore
-└── README.md
-```
+Moustafa, N.; Slay, J. UNSW-NB15: a comprehensive data set for network intrusion
+detection systems (UNSW-NB15 network data set). MilCIS, 2015.
+Consulte a página oficial para as demais referências solicitadas pelos autores.

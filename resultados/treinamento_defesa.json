@@ -1,0 +1,73 @@
+{
+  "assinatura": {
+    "versao_protocolo": 2,
+    "modelo_original_sha256": "553890d0c3ea901a2358198df2f8f2095f1a95da9538826f8f26b4bcc79a4db1",
+    "datasets": {
+      "treino": {
+        "arquivo": "UNSW_NB15_training-set.csv",
+        "sha256": "bec7dd5ec88dc2a0ccc7a07879d338395ed7421750f675fd0339e07dfe0648fa"
+      },
+      "teste": {
+        "arquivo": "UNSW_NB15_testing-set.csv",
+        "sha256": "734fe6642edf758f7c94d7d9149426b49d202fe8e7bf0bef47392489c3c0a559"
+      }
+    },
+    "semente_treino": 2026,
+    "fracao_ataques_treino": 0.2,
+    "intensidades_aumento": [
+      0.1,
+      0.3
+    ],
+    "tentativas": 16
+  },
+  "ataques_selecionados": 23868,
+  "registros_originais": 175341,
+  "modelos": {
+    "controle_duplicacao": {
+      "arquivo": "modelo_random_forest_controle.pkl",
+      "sha256": "03a1914b8d59777716cbde9c1df9310deaf2e144f6db3a5b58237391b2cb6232",
+      "tempo_treinamento_segundos": 123.11092649999773,
+      "registros": 223077,
+      "classes": {
+        "1": 167077,
+        "0": 56000
+      },
+      "geracao": [
+        {
+          "intensidade": 0.1,
+          "transformacao": "identidade"
+        },
+        {
+          "intensidade": 0.3,
+          "transformacao": "identidade"
+        }
+      ]
+    },
+    "defesa": {
+      "arquivo": "modelo_random_forest_defesa.pkl",
+      "sha256": "2fa36b49bd7a928c415a48af1650bd9c471dbce221dc003db149929c4ca03435",
+      "tempo_treinamento_segundos": 118.55324170002132,
+      "registros": 223077,
+      "classes": {
+        "1": 167077,
+        "0": 56000
+      },
+      "geracao": [
+        {
+          "intensidade": 0.1,
+          "consultas_por_amostra": 17,
+          "probabilidade_media_antes": 0.9830822575968203,
+          "probabilidade_media_depois": 0.9227311314281471,
+          "amostras_com_probabilidade_reduzida": 20364
+        },
+        {
+          "intensidade": 0.3,
+          "consultas_por_amostra": 17,
+          "probabilidade_media_antes": 0.9830822575968203,
+          "probabilidade_media_depois": 0.8985124113705686,
+          "amostras_com_probabilidade_reduzida": 22559
+        }
+      ]
+    }
+  }
+}

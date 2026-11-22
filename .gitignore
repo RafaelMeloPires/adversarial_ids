@@ -11,3 +11,4 @@ resultados/*
 !resultados/.gitkeep
 !resultados/*.json
 !resultados/*.png
+!resultados/*.csv

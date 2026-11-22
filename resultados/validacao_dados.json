@@ -64,5 +64,6 @@
     }
   },
   "registros_teste_identicos_ao_treino_sem_id": 4247,
+  "registros_teste_com_42_entradas_identicas_ao_treino": 8541,
   "politica_duplicados": "Divisões oficiais preservadas; coincidências reportadas, sem remoção automática."
 }

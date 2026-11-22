@@ -1,0 +1,144 @@
+{
+  "versao_protocolo": 2,
+  "modelo_original_sha256": "553890d0c3ea901a2358198df2f8f2095f1a95da9538826f8f26b4bcc79a4db1",
+  "amostras_ataque": 2000,
+  "sementes": [
+    42,
+    43,
+    44
+  ],
+  "denominador_comum": 1965,
+  "teste_limpo": [
+    {
+      "modelo": "original",
+      "amostras": 82332,
+      "acuracia": 0.8709857649516591,
+      "precisao": 0.8176477048100154,
+      "recall": 0.9854628077296391,
+      "f1_score": 0.8937459987195903,
+      "taxa_falsos_positivos": 0.2692702702702703,
+      "tn": 27037,
+      "fp": 9963,
+      "fn": 659,
+      "tp": 44673
+    },
+    {
+      "modelo": "controle_duplicacao",
+      "amostras": 82332,
+      "acuracia": 0.8655079434484769,
+      "precisao": 0.8107054107489434,
+      "recall": 0.9859481161210624,
+      "f1_score": 0.8897803171316803,
+      "taxa_falsos_positivos": 0.28205405405405404,
+      "tn": 26564,
+      "fp": 10436,
+      "fn": 637,
+      "tp": 44695
+    },
+    {
+      "modelo": "defesa",
+      "amostras": 82332,
+      "acuracia": 0.8551110139435456,
+      "precisao": 0.7966044504430908,
+      "recall": 0.9894996911673872,
+      "f1_score": 0.8826359441563936,
+      "taxa_falsos_positivos": 0.30954054054054053,
+      "tn": 25547,
+      "fp": 11453,
+      "fn": 476,
+      "tp": 44856
+    }
+  ],
+  "ataque_orcamento_maximo": {
+    "original": {
+      "intensidade": 0.3,
+      "repeticoes": 3,
+      "recall": {
+        "media": 0.9746666666666667,
+        "desvio_padrao": 0.0002886751345947811,
+        "minimo": 0.9745,
+        "maximo": 0.975
+      },
+      "queda_recall_pp": {
+        "media": 1.1333333333333306,
+        "desvio_padrao": 0.02886751345947811,
+        "minimo": 1.100000000000001,
+        "maximo": 1.1499999999999955
+      },
+      "taxa_evasao": {
+        "media": 0.011494252873563218,
+        "desvio_padrao": 0.000292773970177295,
+        "minimo": 0.011156186612576065,
+        "maximo": 0.011663286004056795
+      },
+      "taxa_evasao_comum": {
+        "media": 0.009329940627650551,
+        "desvio_padrao": 0.00029381693088530533,
+        "minimo": 0.00916030534351145,
+        "maximo": 0.009669211195928753
+      }
+    },
+    "controle_duplicacao": {
+      "intensidade": 0.3,
+      "repeticoes": 3,
+      "recall": {
+        "media": 0.9728333333333333,
+        "desvio_padrao": 0.0002886751345947811,
+        "minimo": 0.9725,
+        "maximo": 0.973
+      },
+      "queda_recall_pp": {
+        "media": 1.416666666666666,
+        "desvio_padrao": 0.02886751345947811,
+        "minimo": 1.4000000000000012,
+        "maximo": 1.4499999999999957
+      },
+      "taxa_evasao": {
+        "media": 0.014353259034110097,
+        "desvio_padrao": 0.0002924773400150077,
+        "minimo": 0.014184397163120567,
+        "maximo": 0.014690982776089158
+      },
+      "taxa_evasao_comum": {
+        "media": 0.011704834605597965,
+        "desvio_padrao": 0.000508905852417303,
+        "minimo": 0.011195928753180661,
+        "maximo": 0.012213740458015267
+      }
+    },
+    "defesa": {
+      "intensidade": 0.3,
+      "repeticoes": 3,
+      "recall": {
+        "media": 0.9848333333333333,
+        "desvio_padrao": 0.0002886751345947811,
+        "minimo": 0.9845,
+        "maximo": 0.985
+      },
+      "queda_recall_pp": {
+        "media": 0.3666666666666707,
+        "desvio_padrao": 0.02886751345947811,
+        "minimo": 0.35000000000000586,
+        "maximo": 0.40000000000000036
+      },
+      "taxa_evasao": {
+        "media": 0.0037093238914179733,
+        "desvio_padrao": 0.00029203352007568323,
+        "minimo": 0.0035407182599898838,
+        "maximo": 0.004046535154274153
+      },
+      "taxa_evasao_comum": {
+        "media": 0.0032230703986429175,
+        "desvio_padrao": 0.00029381693088530587,
+        "minimo": 0.0030534351145038168,
+        "maximo": 0.0035623409669211198
+      }
+    }
+  },
+  "interpretacao": [
+    "Comparar modelos na mesma amostra e intensidade; o teste completo e a amostra maliciosa têm populações diferentes.",
+    "Taxa de evasão comum usa a interseção das detecções limpas; a taxa própria de cada modelo tem outro denominador.",
+    "Desvio padrão das sementes não é intervalo de confiança nem mede variabilidade de treinamento.",
+    "Benefício sob ataque deve ser apresentado junto com F1, falsos positivos e controle por duplicação."
+  ]
+}

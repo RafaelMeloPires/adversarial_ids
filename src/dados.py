@@ -52,12 +52,12 @@ def validar(dados, nome="dataset"):
         raise ValueError(f"{nome}: label deve conter as duas classes 0 e 1")
     if dados.id.duplicated().any() or (dados.id % 1 != 0).any():
         raise ValueError(f"{nome}: identificadores repetidos ou fracionários")
-    normal = dados.attack_cat.str.strip().str.lower().eq("normal")
-    if not normal.eq(dados.label.eq(0)).all():
-        raise ValueError(f"{nome}: attack_cat incompatível com label")
     for coluna in CATEGORICAS + ["attack_cat"]:
         if not dados[coluna].map(lambda x: isinstance(x, str) and bool(x.strip())).all():
             raise ValueError(f"{nome}: categoria vazia/inválida em {coluna}")
+    normal = dados.attack_cat.str.strip().str.lower().eq("normal")
+    if not normal.eq(dados.label.eq(0)).all():
+        raise ValueError(f"{nome}: attack_cat incompatível com label")
 
 
 def carregar_dados(pasta=DATA_DIR):
