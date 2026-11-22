@@ -1,0 +1,118 @@
+{
+    "descricao": "Comparação empírica da robustez a ruídos sintéticos no espaço de características",
+    "configuracao": {
+        "semente_teste": 42,
+        "semente_treino": 2026,
+        "amostras_teste_maliciosas": 2000,
+        "registros_treino_originais": 175341,
+        "ataques_treino_selecionados": 23868,
+        "registros_treino_aumentados": 223077,
+        "fracao_ataques_treino": 0.2,
+        "intensidades_aumento": [
+            0.1,
+            0.3
+        ],
+        "intensidades_teste": [
+            0.05,
+            0.1,
+            0.2,
+            0.3
+        ],
+        "caracteristicas_manipuladas": [
+            "dur",
+            "sbytes",
+            "dbytes",
+            "rate",
+            "sload",
+            "dload"
+        ],
+        "tempo_treinamento_segundos": 147.27986940002302
+    },
+    "teste_limpo_completo": {
+        "modelo_original": {
+            "acuracia": 0.8709857649516591,
+            "precisao": 0.8176477048100154,
+            "recall": 0.9854628077296391,
+            "f1_score": 0.8937459987195903,
+            "matriz_confusao": [
+                [
+                    27037,
+                    9963
+                ],
+                [
+                    659,
+                    44673
+                ]
+            ]
+        },
+        "modelo_defesa": {
+            "acuracia": 0.8697104406549094,
+            "precisao": 0.8155029995806058,
+            "recall": 0.9865657813465102,
+            "f1_score": 0.8929152566060715,
+            "matriz_confusao": [
+                [
+                    26882,
+                    10118
+                ],
+                [
+                    609,
+                    44723
+                ]
+            ]
+        }
+    },
+    "teste_ataques_manipulados": {
+        "recall_inicial_modelo_original": 0.986,
+        "recall_inicial_modelo_defesa": 0.9875,
+        "detectados_inicialmente_modelo_original": 1972,
+        "detectados_inicialmente_modelo_defesa": 1975,
+        "experimentos": [
+            {
+                "intensidade": 0.05,
+                "recall_amostra_original": 0.986,
+                "recall_amostra_defesa": 0.9875,
+                "recall_modelo_original": 0.993,
+                "recall_modelo_defesa": 0.9995,
+                "delta_recall_pontos_percentuais": 0.6500000000000061,
+                "taxa_evasao_modelo_original": 0.0015212981744421906,
+                "taxa_evasao_modelo_defesa": 0.0
+            },
+            {
+                "intensidade": 0.1,
+                "recall_amostra_original": 0.986,
+                "recall_amostra_defesa": 0.9875,
+                "recall_modelo_original": 0.9915,
+                "recall_modelo_defesa": 0.9995,
+                "delta_recall_pontos_percentuais": 0.8000000000000007,
+                "taxa_evasao_modelo_original": 0.0035496957403651115,
+                "taxa_evasao_modelo_defesa": 0.0
+            },
+            {
+                "intensidade": 0.2,
+                "recall_amostra_original": 0.986,
+                "recall_amostra_defesa": 0.9875,
+                "recall_modelo_original": 0.9925,
+                "recall_modelo_defesa": 1.0,
+                "delta_recall_pontos_percentuais": 0.7499999999999951,
+                "taxa_evasao_modelo_original": 0.002028397565922921,
+                "taxa_evasao_modelo_defesa": 0.0
+            },
+            {
+                "intensidade": 0.3,
+                "recall_amostra_original": 0.986,
+                "recall_amostra_defesa": 0.9875,
+                "recall_modelo_original": 0.991,
+                "recall_modelo_defesa": 1.0,
+                "delta_recall_pontos_percentuais": 0.9000000000000008,
+                "taxa_evasao_modelo_original": 0.0035496957403651115,
+                "taxa_evasao_modelo_defesa": 0.0
+            }
+        ]
+    },
+    "limitacoes": [
+        "Perturbações aleatórias em seis atributos; não há otimização contra a predição.",
+        "Não se garante consistência entre atributos correlacionados nem viabilidade como pacotes reais.",
+        "A taxa de evasão usa apenas os ataques inicialmente detectados por cada modelo; os denominadores podem diferir."
+    ]
+}
